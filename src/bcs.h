@@ -14,6 +14,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Custom system-wide header files. */
+#include <string.h>
+
 /* System-wide constants. */
 #define ID_LEN 5
 #define MIN_NAME_LEN 1
@@ -41,6 +44,7 @@ typedef BOOLEAN bool;
 
 #define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames after this executable's name\n"
 #define MESSAGE_ERROR_FILE_NOT_EXIST "Error: Filename %s does not exist!\n"
+#define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long!\n"
 /* End Custom Types */
 
 

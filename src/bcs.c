@@ -13,6 +13,8 @@
 int main(int argc, char* argv[]){
 
     BCSType menu;
+    bool passed = false;
+    int i = 0;
     int result = EXIT_FAILURE;
     char menuFileName[MAX_STRING_MEDIUM] = {0};
     char subMenuFileName[MAX_STRING_MEDIUM] = {0};
@@ -26,19 +28,32 @@ int main(int argc, char* argv[]){
 
     } else {
 
-        strcpy(menuFileName, *argv[1]);
-        strcpy(subMenuFileName, *argv[2]);
+        passed = true;
+        for (i = 1; i < MIN_ARGS; i++){
+            if (strlen(argv[i]) > MAX_STRING_MEDIUM - 1){
+                fprintf(stderr, MESSAGE_ERROR_FILENAME_TOO_LONG, argv[i]);
+                passed = false;
+                break;
+            }
+        }
 
-        if (!fileExists(menuFileName)){
-           fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, menuFileName);
+        if (passed){
 
-        } else if (!fileExists(subMenuFileName)){
-           fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, subMenuFileName);
+            strcpy(menuFileName, argv[1]);
+            strcpy(subMenuFileName, argv[2]);
 
-        } else {
+            if (!fileExists(menuFileName)){
+               fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, menuFileName);
+
+            } else if (!fileExists(subMenuFileName)){
+               fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, subMenuFileName);
+
+            } else {
 
 
-            result = EXIT_SUCCESS;
+                result = EXIT_SUCCESS;
+
+            }
 
         }
 
