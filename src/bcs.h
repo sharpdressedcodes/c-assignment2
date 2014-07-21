@@ -26,9 +26,8 @@
 
 
 /* Custom Types */
-#define FILE_MENU "menu.dat"
-#define FILE_SUBMENU "submenu.dat"
 #define MIN_ARGS 3
+#define MAX_STRING_MEDIUM 256
 
 typedef enum {
     FALSE = 0,

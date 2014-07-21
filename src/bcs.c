@@ -12,30 +12,38 @@
 
 int main(int argc, char* argv[]){
 
-   BCSType menu;
-   int result = EXIT_FAILURE;
+    BCSType menu;
+    int result = EXIT_FAILURE;
+    char menuFileName[MAX_STRING_MEDIUM] = {0};
+    char subMenuFileName[MAX_STRING_MEDIUM] = {0};
 
-   /* Stupid Eclipse won't show the console until after it has stopped.
+    /* Stupid Eclipse won't show the console until after it has stopped.
     * See http://stackoverflow.com/questions/13035075/printf-not-printing-on-console */
-   setvbuf (stdout, NULL, _IONBF, 0);
+    setvbuf (stdout, NULL, _IONBF, 0);
 
-   if (!fileExists(FILE_MENU)){
-       fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, FILE_MENU);
-
-   } else if (!fileExists(FILE_SUBMENU)){
-       fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, FILE_SUBMENU);
-
-   } else if (argc != MIN_ARGS){
+    if (argc != MIN_ARGS){
        fprintf(stderr, MESSAGE_ERROR_INVALID_ARGS);
 
-   } else {
+    } else {
+
+        strcpy(menuFileName, *argv[1]);
+        strcpy(subMenuFileName, *argv[2]);
+
+        if (!fileExists(menuFileName)){
+           fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, menuFileName);
+
+        } else if (!fileExists(subMenuFileName)){
+           fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, subMenuFileName);
+
+        } else {
 
 
-       result = EXIT_SUCCESS;
-   }
+            result = EXIT_SUCCESS;
 
+        }
 
+    }
 
-   return result;
+    return result;
 
 }
