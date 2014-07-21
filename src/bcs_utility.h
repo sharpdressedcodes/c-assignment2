@@ -15,4 +15,8 @@ void systemInit(BCSType* menu);
 int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
+
+/* Custom */
+bool fileExists(const char *fileName);
+
 #endif

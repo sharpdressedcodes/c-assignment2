@@ -50,3 +50,22 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile)
 void systemFree(BCSType* menu)
 {
 }
+
+/****************************************************************************
+* Test for file existence.
+****************************************************************************/
+bool fileExists(const char *fileName){
+
+    bool result = false;
+    FILE *fp = null;
+
+    fp = fopen(fileName, "r");
+
+    if (fp){
+        fclose(fp);
+        result = true;
+    }
+
+    return result;
+
+}

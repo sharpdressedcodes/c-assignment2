@@ -10,11 +10,32 @@
 #include "bcs_options.h"
 #include "bcs_utility.h"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
+
    BCSType menu;
+   int result = EXIT_FAILURE;
+
+   /* Stupid Eclipse won't show the console until after it has stopped.
+    * See http://stackoverflow.com/questions/13035075/printf-not-printing-on-console */
+   setvbuf (stdout, NULL, _IONBF, 0);
+
+   if (!fileExists(FILE_MENU)){
+       fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, FILE_MENU);
+
+   } else if (!fileExists(FILE_SUBMENU)){
+       fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, FILE_SUBMENU);
+
+   } else if (argc != MIN_ARGS){
+       fprintf(stderr, MESSAGE_ERROR_INVALID_ARGS);
+
+   } else {
+
+
+       result = EXIT_SUCCESS;
+   }
 
 
 
-   return EXIT_SUCCESS;
+   return result;
+
 }

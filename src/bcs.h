@@ -24,6 +24,30 @@
 #define HOT 'H'
 #define COLD 'C'
 
+
+/* Custom Types */
+#define FILE_MENU "menu.dat"
+#define FILE_SUBMENU "submenu.dat"
+#define MIN_ARGS 3
+
+typedef enum {
+    FALSE = 0,
+    TRUE = 1
+} BOOLEAN;
+
+typedef BOOLEAN bool;
+#define false FALSE
+#define true TRUE
+#define null NULL
+
+#define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames after this executable's name\n"
+#define MESSAGE_ERROR_FILE_NOT_EXIST "Error: Filename %s does not exist!\n"
+/* End Custom Types */
+
+
+
+
+
 typedef struct category* CategoryTypePtr;
 typedef struct item* ItemTypePtr;
 
