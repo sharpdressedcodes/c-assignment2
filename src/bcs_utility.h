@@ -18,5 +18,15 @@ void systemFree(BCSType* menu);
 
 /* Custom */
 bool fileExists(const char *fileName);
-
+bool getIntegerFromStdIn(int *result, const int length, const char *message,
+        const int min, const int max, bool showError, bool allowEmpty);
+bool getStringFromStdIn(char *result, const int length, const char *message,
+        const int min, bool showError);
+bool allocateString(char **str, const int size);
+void freeString(char **str);
+void freeStringArray(char **arr, const int length);
+void freeStrings(const int length, ...);
+char *createDashes(const char *str);
+menuoption_t *getMenuOptionByIndex(const int index);
+menuoption_t *getMenuOptionByTitle(const char *title);
 #endif

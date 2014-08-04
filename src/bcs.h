@@ -16,6 +16,7 @@
 
 /* Custom system-wide header files. */
 #include <string.h>
+#include <stdarg.h>
 
 /* System-wide constants. */
 #define ID_LEN 5
@@ -29,8 +30,35 @@
 
 
 /* Custom Types */
+
+/* Size of extra space for terminating strings with '\0' */
+#define EXTRA_SPACE 1
+/* This is used to compensate for the extra character spaces taken up by the
+ *  '\n' and '\0' when user is asked for input through fgets(). */
+#define EXTRA_SPACES 2
+/* Used when creating dashes in output.
+ * 3 = string\nstring\n\0
+ * \n\n\0 */
+#define EXTRA_SPACES_DASH 3
+
+/* This specifies that there is no string minimum. */
+#define MIN_STRING_NONE 0
+/* This specifies that there is a string minimum. */
+#define MIN_STRING 1
 #define MIN_ARGS 3
+
 #define MAX_STRING_MEDIUM 256
+#define MAX_STRING_LARGE 1024
+
+/* This is used when using 1 based index instead of usual 0 based */
+#define BASE1 1
+/* Normal human number system is decimal which is base 10. This is used
+ * when converting with strtol() */
+#define BASE10 10
+
+/* Menu starts at 1 and not 0 */
+#define MIN_MENU_OPTION BASE1
+#define MAX_MENU_OPTION 9
 
 typedef enum {
     FALSE = 0,
@@ -42,9 +70,25 @@ typedef BOOLEAN bool;
 #define true TRUE
 #define null NULL
 
+/* Message shown to user when memory allocation fails (out of memory?). */
+#define MESSAGE_ERROR_NO_MEMORY "Error: memory allocation failed.\n"
 #define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames after this executable's name\n"
 #define MESSAGE_ERROR_FILE_NOT_EXIST "Error: Filename %s does not exist!\n"
-#define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long!\n"
+#define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long! (max: %d)\n"
+
+/* Menu Option Titles. */
+#define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
+#define MENU_TITLE_SUMMARY_COLD "Cold Drinks Summary"
+#define MENU_TITLE_REPORT "Detailed Menu Report"
+#define MENU_TITLE_ADD_CATEGORY "Add Menu Category"
+#define MENU_TITLE_DELETE_CATEGORY "Delete Menu Category"
+#define MENU_TITLE_ADD_ITEM "Add Menu Item"
+#define MENU_TITLE_DELETE_ITEM "Delete Menu Item"
+#define MENU_TITLE_EXIT "Save & Exit"
+#define MENU_TITLE_ABORT "Abort"
+
+#define SPACE_CHAR ' '
+#define DASH_CHAR '-'
 /* End Custom Types */
 
 
@@ -86,5 +130,39 @@ typedef struct bcs
    CategoryTypePtr headCategory;
    unsigned numCategories;
 } BCSType;
+
+
+
+
+
+
+/* This structure defines the main menu options. */
+typedef struct {
+
+    /* index is the number shown to the user.
+     * The user will select this number. */
+    int index;
+
+    /* str is the menu title shown to the user.
+     * This is also used when retrieving an
+     * element from the array. */
+    const char* str;
+
+    /* Track statistics for this method?
+     * This is used in Session Summary. */
+    /*bool tracked;*/
+
+    /* This pointer points to the method that should be invoked when the user
+     * selects this menu option. This effectively removes the need for a
+     * switch statement  */
+    /*void (*method)(int*);*/
+    void (*method)(BCSType* menu, ...);
+    /*void (*method)(...);*/
+
+} menuoption_t;
+
+
+void exitApplication(int *abort);
+menuoption_t *getMenuOptions();
 
 #endif
