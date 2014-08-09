@@ -27,14 +27,16 @@ void readRestOfLine()
    clearerr(stdin);
 }
 
-
 /****************************************************************************
 * Initialises the system to a safe empty state.
 ****************************************************************************/
 void systemInit(BCSType* menu)
 {
-}
 
+    menu->headCategory = null;
+    menu->numCategories = 0;
+
+}
 
 /****************************************************************************
 * Loads all data into the system.
@@ -42,58 +44,480 @@ void systemInit(BCSType* menu)
 int loadData(BCSType* menu, char* menuFile, char* submenuFile)
 {
 
-    return 0; /*gk*/
-}
+    int result = 0;
 
+    result = (int)loadDataFromFile(menu, menuFile, false);
+
+    if (result)
+        result = (int)loadDataFromFile(menu, submenuFile, true);
+
+    return result;
+}
 
 /****************************************************************************
 * Deallocates memory used in the program.
 ****************************************************************************/
 void systemFree(BCSType* menu)
 {
+
+    CategoryTypePtr cp = menu->headCategory;
+
+    while (cp){
+
+        CategoryTypePtr cp2 = &(*cp);
+        ItemTypePtr ip = cp->headItem;
+
+        while (ip){
+
+            ItemTypePtr ip2 = &(*ip);
+
+            ip = ip->nextItem;
+            free(ip2);
+
+        }
+
+        cp = cp->nextCategory;
+        free(cp2);
+
+    }
+
+    systemInit(menu);
+
 }
 
-/****************************************************************************
-* Test for file existence.
-****************************************************************************/
-bool fileExists(const char *fileName){
+
+bool validateItemPrice(const char* price){
 
     bool result = false;
-    FILE *fp = null;
+    const char delim[] = {PRICE_SEPARATOR_CHAR, 0};
+    char **tokens = null;
+    const int count = explode(delim, price, &tokens);
+    int i = 0;
 
-    fp = fopen(fileName, "r");
+    if (count == PRICE_TOKEN_COUNT){
 
-    if (fp){
-        fclose(fp);
-        result = true;
+        for (i = 0, result = true; i < count && result; i++)
+            if (!isNumeric(tokens[i]))
+                result = false;
+
+    }
+
+    freeDynamicStringArray(&tokens, count);
+
+    return result;
+
+}
+
+bool validateCategoryTokens(char **tokens, bool showError){
+
+    bool result = true;
+    int i = 0;
+
+    for (i = 0; i < eCategoryMax && result; i++)
+        result &= validateCategoryToken(tokens, i, showError);
+
+    return result;
+
+}
+
+bool validateMenuTokens(char **tokens, bool showError){
+
+    bool result = true;
+    int i = 0;
+
+    for (i = 0; i < eMenuMax && result; i++)
+        result &= validateMenuToken(tokens, i, showError);
+
+    return result;
+
+}
+
+bool validateCategoryToken(char **tokens, const int token, bool showError){
+
+    bool result = false;
+    const char *s = tokens[token];
+    const size_t len = strlen(s);
+
+    switch (token){
+        case eCategoryId:
+
+            result = (len == ID_LEN);
+            break;
+
+        case eCategoryType:
+
+            result = (len == DRINK_LEN && (toupper(s[0]) == eDrinkHot || toupper(s[0]) == eDrinkCold));
+            break;
+
+        case eCategoryName:
+
+            result = (len > MIN_NAME_LEN - 1 && len < MAX_NAME_LEN + 1);
+            break;
+
+        case eCategoryDescription:
+
+            result = (len > MIN_DESC_LEN - 1 && len < MAX_DESC_LEN + 1);
+            break;
+    }
+
+    if (!result && showError)
+        fprintf(stderr, MESSAGE_ERROR_INVALID_TOKEN, "Category", s, token);
+
+    return result;
+
+}
+
+bool validateMenuToken(char **tokens, const int token, bool showError){
+
+    bool result = false;
+    const char *s = tokens[token];
+    const size_t len = strlen(s);
+
+    switch (token){
+        case eMenuId:
+
+            result = (len == ID_LEN);
+            break;
+
+        case eMenuCategoryId:
+
+            result = (len == ID_LEN);
+            break;
+
+        case eMenuType:
+
+            result = (len > MIN_NAME_LEN - 1 && len < MAX_NAME_LEN + 1);
+            break;
+
+        case eMenuPrice1:
+
+            result = validateItemPrice(s);
+            break;
+
+        case eMenuPrice2:
+
+            result = validateItemPrice(s);
+            break;
+
+        case eMenuPrice3:
+
+            result = validateItemPrice(s);
+            break;
+
+        case eMenuDescription:
+
+            result = (len > MIN_DESC_LEN - 1 && len < MAX_DESC_LEN + 1);
+            break;
     }
 
     return result;
 
 }
 
-/* This function is used to underline a string in the console. */
-char *createDashes(const char *str){
+bool populateMenu(BCSType *menu, const char *line, bool isSubMenu){
 
-    const int len = strlen(str);
-    const int max = (len << 1) + EXTRA_SPACES_DASH; /* including 2 \n's and \0*/
-    char *dashes = null;
+    bool result = true;
+    ItemTypePtr newItem = null;
+    ItemTypePtr currentItem = null;
+    CategoryTypePtr currentCategory = null;
+    static CategoryTypePtr lastCategory = null;
 
-    /* Did memory allocation succeed? */
-    if (allocateString(&dashes, max)){
+    if (isSubMenu){
 
-        /* Append the string. */
-        sprintf(dashes, "%s\n", str);
+        newItem = menuItemFromString(menu, line, &currentCategory);
 
-        /* Append the dashes. */
-        memset(dashes + (sizeof(char) * strlen(dashes)), DASH_CHAR, len);
-        strcat(dashes, "\n");
+        if (newItem){
+
+            if (currentCategory->headItem == null){
+
+                currentCategory->headItem = newItem;
+                currentCategory->numItems++;
+
+            } else {
+
+                currentItem = currentCategory->headItem;
+
+                do {
+
+                    if (currentItem->nextItem == null){
+                        currentItem->nextItem = newItem;
+                        currentCategory->numItems++;
+                        break;
+                    }
+
+                    currentItem = currentItem->nextItem;
+
+                } while (currentItem != null);
+
+            }
+
+        }
+
+    } else {
+
+        if (lastCategory == null){
+
+            menu->headCategory = menuCategoryFromString(menu, line);
+
+            if (menu->headCategory){
+                lastCategory = menu->headCategory;
+                menu->numCategories++;
+            }
+
+        } else {
+
+            lastCategory->nextCategory = menuCategoryFromString(menu, line);
+
+            if (lastCategory->nextCategory){
+                lastCategory = lastCategory->nextCategory;
+                menu->numCategories++;
+            }
+
+        }
 
     }
 
-    return dashes;
+    return result;
 
 }
+
+bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
+
+    FILE *fp = null;
+    bool result = false;
+    bool moreChunks = false;
+    char *chunk = null;
+    char *line = null;
+    int power = 0;
+    int len = 0;
+    const int chunkSize = MAX_STRING_SMALL;
+
+    fp = fopen(fileName, "r");
+
+    if (fp){
+
+        do {
+
+            power = 0;
+
+            do {
+
+                const int lineSize = chunkSize * ++power;
+
+                if (!allocateString(&chunk, chunkSize) || !allocateString(&line, lineSize)){
+                    freeStrings(2, &chunk, &line);
+                    return result;
+                }
+
+                fgets(chunk, chunkSize, fp);
+                len = strlen(chunk);
+                moreChunks = len > 0 && chunk[len - 1] != '\n';
+
+                if (len > 0){
+                    if (power > 1)
+                        strncat(line, chunk, len);
+                    else
+                        strncpy(line, chunk, len);
+                }
+
+                freeString(&chunk);
+
+            } while (moreChunks);
+
+            if (len > 0){
+
+                int len2 = strlen(line) - 1;
+
+                if (line[len2] == '\n')
+                    line[len2] = 0;
+
+                if (!populateMenu(menu, line, isSubMenu)){
+                    freeStrings(2, &chunk, &line);
+                    return result;
+                }
+
+            }
+
+            freeString(&line);
+
+        } while (len > 0);
+
+        result = true;
+        fclose(fp);
+
+    }
+
+    return result;
+
+}
+
+CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id){
+
+    CategoryTypePtr ptr = null;
+    CategoryTypePtr head = null;
+
+    for (head = menu->headCategory; head != null; head = head->nextCategory){
+        if (strcmp(head->categoryID, id) == 0){
+            ptr = head;
+            break;
+        }
+    }
+
+    return ptr;
+
+}
+
+ItemTypePtr getItemFromId(BCSType *menu, const char *id){
+
+    ItemTypePtr ptr = null;
+    ItemTypePtr head = null;
+    CategoryTypePtr chead = null;
+
+    for (chead = menu->headCategory; chead != null && ptr == null; chead = chead->nextCategory){
+        for (head = chead->headItem; head != null; head = head->nextItem){
+            if (strcmp(head->itemID, id) == 0){
+                ptr = head;
+                break;
+            }
+        }
+    }
+
+    return ptr;
+
+}
+
+CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
+
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    char **tokens = null;
+    int count = 0;
+    CategoryTypePtr ptr = null;
+    CategoryTypePtr cp = null;
+
+    count = explode(delim, str, &tokens);
+
+    if (count == eCategoryMax){
+
+        if (!validateCategoryTokens(tokens, true)){
+            freeDynamicStringArray(&tokens, count);
+            return ptr;
+        }
+
+        cp = getCategoryFromId(menu, tokens[eCategoryId]);
+
+        if (cp != null){
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_EXIST, tokens[eCategoryId]);
+            freeDynamicStringArray(&tokens, count);
+            return ptr;
+        }
+
+        ptr = calloc(1, sizeof(CategoryType));
+
+        if (!ptr){
+
+            fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
+
+        } else {
+
+            ptr->numItems = 0;
+            ptr->headItem = null;
+            ptr->nextCategory = null;
+            ptr->drinkType = toupper(tokens[eCategoryType][0]);
+
+            strcpy(ptr->categoryID, tokens[eCategoryId]);
+            strcpy(ptr->categoryName, tokens[eCategoryName]);
+            strcpy(ptr->categoryDescription, tokens[eCategoryDescription]);
+
+        }
+
+    } else {
+
+        fprintf(stderr, MESSAGE_ERROR_INVALID_TOKEN_ARGS, count, eCategoryMax);
+
+    }
+
+    freeDynamicStringArray(&tokens, count);
+
+    return ptr;
+
+}
+
+ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *category){
+
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    char **tokens = null;
+    int count = 0;
+    ItemTypePtr ptr = null;
+    ItemTypePtr ip = null;
+    char **prices = null;
+    int priceCount = 0;
+    char priceDelim[] = {PRICE_SEPARATOR_CHAR, 0};
+    int i = 0;
+
+    count = explode(delim, str, &tokens);
+
+    if (count == eMenuMax){
+
+        if (!validateMenuTokens(tokens, true)){
+            freeDynamicStringArray(&tokens, count);
+            return ptr;
+        }
+
+        *category = getCategoryFromId(menu, tokens[eMenuCategoryId]);
+
+        if (*category == null){
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, tokens[eMenuCategoryId]);
+            freeDynamicStringArray(&tokens, count);
+            return ptr;
+        }
+
+        ip = getItemFromId(menu, tokens[eMenuId]);
+
+        if (ip != null){
+            fprintf(stderr, MESSAGE_ERROR_MENU_EXIST, tokens[eMenuId]);
+            freeDynamicStringArray(&tokens, count);
+            return ptr;
+        }
+
+        ptr = calloc(1, sizeof(ItemType));
+
+        if (!ptr){
+
+            fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
+
+        } else {
+
+            ptr->nextItem = null;
+
+            strcpy(ptr->itemID, tokens[eMenuId]);
+            strcpy(ptr->itemName, tokens[eMenuType]);
+            strcpy(ptr->itemDescription, tokens[eMenuDescription]);
+
+            for (i = 0; i < NUM_PRICES; i++){
+
+                priceCount = explode(priceDelim, tokens[eMenuPrice1 + i], &prices);
+
+                stringToInteger(prices[ePriceDollars], (int*)&ptr->prices[i].dollars);
+                stringToInteger(prices[ePriceCents], (int*)&ptr->prices[i].cents);
+
+                freeDynamicStringArray(&prices, priceCount);
+
+            }
+
+        }
+
+    } else {
+
+        fprintf(stderr, MESSAGE_ERROR_INVALID_TOKEN_ARGS, count, eMenuMax);
+
+    }
+
+    freeDynamicStringArray(&tokens, count);
+
+    return ptr;
+
+}
+
 
 /* This function will get an integer value from the user.
  * Depending on the parameters set, it can also show an error message,
@@ -217,7 +641,7 @@ bool getIntegerFromStdIn(int *result, const int length, const char *message,
 bool getStringFromStdIn(char *result, int length, const char *message,
         int min, bool showError){
 
-    char * s = null;
+    char *s = null;
     char errorMessage[MAX_STRING_MEDIUM] = {0};
     bool passed = false;
 
@@ -279,6 +703,8 @@ bool getStringFromStdIn(char *result, int length, const char *message,
     return passed;
 
 }
+
+
 
 /* This function is used for dynamic string allocation.
  * It will allocate the required memory, then set allocated bytes to null. */
@@ -342,6 +768,18 @@ void freeStringArray(char **arr, const int length){
 
 }
 
+void freeDynamicStringArray(char ***arr, const int length){
+
+    int i = 0;
+    char **a = *arr;
+
+    for (; i < length; i++)
+        free(a[i]);
+
+    free(a);
+
+}
+
 /* This function is used as a helper function to delete an indefinite
  * number of dynamic strings. */
 void freeStrings(const int length, ...){
@@ -359,6 +797,146 @@ void freeStrings(const int length, ...){
 
     /* Cleanup the argument list. */
     va_end(ap);
+
+}
+
+
+
+char *copyString(const char *str){
+
+    int i = 0;
+    size_t len = strlen(str);
+    char *s = malloc(sizeof(char) * (len + 1));
+
+    if (!s){
+        fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
+        return null;
+    }
+
+    for (; i < len; i++)
+        s[i] = str[i];
+
+    s[len] = 0;
+
+    return s;
+
+}
+
+int explode(const char *delimeter, const char *str, char ***array){
+
+    int count = 0;
+    char **arr = null;
+    char *s = copyString(str);
+    char *token = strtok(s, delimeter);
+
+    while (token){
+
+        arr = realloc(arr, sizeof(char*) * ++count);
+
+        if (arr == null){
+            fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
+            free(arr);
+            free(s);
+            return 0;
+        }
+
+        arr[count - 1] = copyString(token);
+
+        /* Continue the loop (if possible). */
+        token = strtok(null, delimeter);
+    }
+
+    *array = arr;
+    free(s);
+
+    return count;
+
+}
+
+bool stringToInteger(const char *str, int *result){
+
+    bool succeeded = false;
+    char *endPtr = null;
+    int i = 0;
+
+    i = (int)strtol(str, &endPtr, BASE10);
+
+    succeeded = (strcmp(endPtr, "") == 0);
+
+    if (succeeded)
+        *result = i;
+
+    return succeeded;
+
+}
+
+bool isNumeric(const char *str){
+
+    bool result = false;
+    char *ptr = copyString(str);
+
+    if (ptr){
+
+        result = true;
+
+        while (*ptr != 0){
+            if (!isdigit(*(ptr++))){
+                result = false;
+                break;
+            }
+        }
+
+        /* rewind pointer back to the beginning of string,
+         * otherwise free() will fail */
+        ptr -= strlen(str);
+        free(ptr);
+
+    }
+
+    return result;
+
+}
+
+/****************************************************************************
+* Test for file existence.
+****************************************************************************/
+bool fileExists(const char *fileName){
+
+    bool result = false;
+    FILE *fp = null;
+
+    fp = fopen(fileName, "r");
+
+    if (fp){
+        fclose(fp);
+        result = true;
+    }
+
+    return result;
+
+}
+
+
+/* This function is used to underline a string in the console. */
+char *createDashes(const char *str){
+
+    const int len = strlen(str);
+    const int max = (len << 1) + EXTRA_SPACES_DASH; /* including 2 \n's and \0*/
+    char *dashes = null;
+
+    /* Did memory allocation succeed? */
+    if (allocateString(&dashes, max)){
+
+        /* Append the string. */
+        sprintf(dashes, "%s\n", str);
+
+        /* Append the dashes. */
+        memset(dashes + (sizeof(char) * strlen(dashes)), DASH_CHAR, len);
+        strcat(dashes, "\n");
+
+    }
+
+    return dashes;
 
 }
 

@@ -25,7 +25,10 @@ int main(int argc, char* argv[]){
 
     /* Stupid Eclipse won't show the console until after it has stopped.
     * See http://stackoverflow.com/questions/13035075/printf-not-printing-on-console */
-    setvbuf (stdout, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+
+    systemInit(&menu);
 
     if (argc != MIN_ARGS){
        fprintf(stderr, MESSAGE_ERROR_INVALID_ARGS);
@@ -41,7 +44,18 @@ int main(int argc, char* argv[]){
         } else if (!fileExists(subMenuFileName)){
            fprintf(stderr, MESSAGE_ERROR_FILE_NOT_EXIST, subMenuFileName);
 
+        } else if (!loadData(&menu, menuFileName, subMenuFileName)){
+            fprintf(stderr, MESSAGE_ERROR_LOAD_DATA_FAIL, menuFileName, subMenuFileName);
+
         } else {
+
+
+            /*************************************/
+            /* uncomment below to test memory deallocation */
+            /*systemFree(&menu);
+            result = EXIT_SUCCESS;
+            return result;*/
+            /*************************************/
 
             /* Append title. */
             strcpy(menuString, "\nMain Menu:\n");
@@ -132,6 +146,8 @@ void saveData(BCSType* menu, char* menuFile, char* submenuFile);
                 }
 
             }
+
+            systemFree(&menu);
 
             result = EXIT_SUCCESS;
 

@@ -15,6 +15,7 @@
 #include <stdlib.h>
 
 /* Custom system-wide header files. */
+#include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -30,6 +31,9 @@
 
 
 /* Custom Types */
+
+#define DRINK_LEN 1
+#define PRICE_TOKEN_COUNT 2
 
 /* Size of extra space for terminating strings with '\0' */
 #define EXTRA_SPACE 1
@@ -47,6 +51,7 @@
 #define MIN_STRING 1
 #define MIN_ARGS 3
 
+#define MAX_STRING_SMALL 32
 #define MAX_STRING_MEDIUM 256
 #define MAX_STRING_LARGE 1024
 
@@ -72,9 +77,16 @@ typedef BOOLEAN bool;
 
 /* Message shown to user when memory allocation fails (out of memory?). */
 #define MESSAGE_ERROR_NO_MEMORY "Error: memory allocation failed.\n"
-#define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames after this executable's name\n"
+#define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames!\n"
 #define MESSAGE_ERROR_FILE_NOT_EXIST "Error: Filename %s does not exist!\n"
 #define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long! (max: %d)\n"
+#define MESSAGE_ERROR_LOAD_DATA_FAIL "Error: Can't load data from file %s and %s\n"
+#define MESSAGE_ERROR_INVALID_TOKEN "Error: %s token %s is invalid (index: %d)!\n"
+#define MESSAGE_ERROR_CATEGORY_EXIST "Error: Category %s already exists!\n"
+#define MESSAGE_ERROR_CATEGORY_NOT_EXIST "Error: Category %s doesn't exist!\n"
+#define MESSAGE_ERROR_MENU_EXIST "Error: Item %s already exists!\n"
+#define MESSAGE_ERROR_MENU_NOT_EXIST "Error: Item %s doesn't exist!\n"
+#define MESSAGE_ERROR_INVALID_TOKEN_ARGS "Error: Invalid number of tokens. Read %d, expecting %d\n"
 
 /* Menu Option Titles. */
 #define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
@@ -89,6 +101,8 @@ typedef BOOLEAN bool;
 
 #define SPACE_CHAR ' '
 #define DASH_CHAR '-'
+#define INPUT_SEPARATOR_CHAR '|'
+#define PRICE_SEPARATOR_CHAR '.'
 /* End Custom Types */
 
 
@@ -161,6 +175,34 @@ typedef struct {
 
 } menuoption_t;
 
+typedef enum {
+    eCategoryId,
+    eCategoryType,
+    eCategoryName,
+    eCategoryDescription,
+    eCategoryMax
+} CategoryToken;
+
+typedef enum {
+    eMenuId,
+    eMenuCategoryId,
+    eMenuType,
+    eMenuPrice1,
+    eMenuPrice2,
+    eMenuPrice3,
+    eMenuDescription,
+    eMenuMax
+} MenuToken;
+
+typedef enum {
+    ePriceDollars,
+    ePriceCents
+} PriceToken;
+
+typedef enum {
+    eDrinkHot = HOT,
+    eDrinkCold = COLD
+} CategoryDrink;
 
 void exitApplication(int *abort);
 menuoption_t *getMenuOptions();
