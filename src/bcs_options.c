@@ -17,6 +17,56 @@
 ****************************************************************************/
 void displaySummary(BCSType* menu, char drinkType)
 {
+
+    CategoryTypePtr cp = menu->headCategory;
+    ItemTypePtr ip = null;
+    char title[MAX_STRING_MEDIUM] = {0};
+    char subtitle[MAX_STRING_LARGE] = {0};
+    char *titleDashes = null;
+    char *subtitleDashes = null;
+
+    sprintf(title, "%s Drinks Summary", drinkType == eDrinkCold ? "Cold" : "Hot");
+    titleDashes = createDashesFromString(title);
+
+    fprintf(stdout, "%s\n", titleDashes);
+
+    while (cp){
+
+        if (cp->drinkType != drinkType){
+            cp = cp->nextCategory ? cp->nextCategory : null;
+            continue;
+        }
+
+        ip = cp->headItem;
+        sprintf(subtitle, "%s - %s (%d items)", cp->categoryID, cp->categoryName, cp->numItems);
+/*        subtitleDashes = createDashesFromString(subtitle);*/
+
+        /*fputs(subtitleDashes, stdout);*/
+        /*printf("%s %s %s %s %s");*/
+
+        /*while (ip){
+
+            switch (drinkType){
+                case eDrinkHot:
+
+                    break;
+                case eDrinkCold:
+
+                    break;
+            }
+
+            ip = ip->nextItem;
+
+        }*/
+
+        cp = cp->nextCategory;
+
+    }
+
+    /*freeStrings(2, &titleDashes, &subtitleDashes);*/
+    freeString(&titleDashes);
+/*    freeString(&subtitleDashes);*/
+
 }
 
 

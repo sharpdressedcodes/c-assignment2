@@ -16,6 +16,8 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
 /* BCSType functions. */
+void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order);
+void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, SortOrder order);
 CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id);
 ItemTypePtr getItemFromId(BCSType *menu, const char *id);
 CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str);
@@ -25,7 +27,7 @@ bool validateCategoryTokens(char **tokens, bool showError);
 bool validateMenuTokens(char **tokens, bool showError);
 bool validateCategoryToken(char **tokens, const int token, bool showError);
 bool validateMenuToken(char **tokens, const int token, bool showError);
-bool populateMenu(BCSType *menu, const char *line, bool isSubMenu);
+bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order);
 bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
 
 /* stdin functions. */
@@ -51,7 +53,8 @@ int explode(const char *delimeter, const char *str, char ***array);
 bool fileExists(const char *fileName);
 
 /* General helper functions. */
-char *createDashes(const char *str);
+char *createDashes(const int length);
+char *createDashesFromString(const char *str);
 menuoption_t *getMenuOptionByIndex(const int index);
 menuoption_t *getMenuOptionByTitle(const char *title);
 #endif

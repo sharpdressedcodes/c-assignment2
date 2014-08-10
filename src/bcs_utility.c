@@ -86,6 +86,244 @@ void systemFree(BCSType* menu)
 }
 
 
+
+void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order){
+
+    static CategoryTypePtr lastCategory = null;
+    CategoryTypePtr currentCategory = null;
+
+    if (menu->headCategory == null){
+
+        menu->headCategory = category;
+        lastCategory = menu->headCategory;
+
+    } else {
+
+        switch (order){
+            case eSortOrderAsIs:
+
+                lastCategory->nextCategory = category;
+                lastCategory = lastCategory->nextCategory;
+
+                break;
+
+            case eSortOrderAscending:
+
+                currentCategory = menu->headCategory;
+
+                /* string2 is less than string1 */
+                if (strcmp(currentCategory->categoryName, category->categoryName) > 0){
+
+                    category->nextCategory = currentCategory;
+                    menu->headCategory = category;
+
+                } else {
+
+                    /* leave first item as is, search for item that is higher,
+                     *  and insert in the chain at that point*/
+
+                    lastCategory = currentCategory;
+                    currentCategory = currentCategory->nextCategory;
+
+                    do {
+
+                        if (currentCategory == null){
+                            lastCategory->nextCategory = category;
+                            currentCategory = category;
+                            break;
+                        }
+
+                        else if (strcmp(currentCategory->categoryName, category->categoryName) > 0){
+                            category->nextCategory = currentCategory;
+                            lastCategory->nextCategory = category;
+                            break;
+                        }
+
+                        lastCategory = currentCategory;
+                        currentCategory = currentCategory->nextCategory;
+
+                    } while (currentCategory != null);
+
+                    if (currentCategory == null)
+                        lastCategory->nextCategory = category;
+
+                }
+
+                break;
+
+            case eSortOrderDescending:
+
+                currentCategory = menu->headCategory;
+
+                /* string1 is less than string2 */
+                if (strcmp(currentCategory->categoryName, category->categoryName) < 0){
+
+                    category->nextCategory = currentCategory;
+                    menu->headCategory = category;
+
+                } else {
+
+                    /* leave first item as is, search for item that is lower,
+                     *  and insert in the chain at that point*/
+
+                    lastCategory = currentCategory;
+                    currentCategory = currentCategory->nextCategory;
+
+                    do {
+
+                        if (currentCategory == null){
+                            lastCategory->nextCategory = category;
+                            currentCategory = category;
+                            break;
+                        }
+
+                        else if (strcmp(currentCategory->categoryName, category->categoryName) < 0){
+                            category->nextCategory = currentCategory;
+                            lastCategory->nextCategory = category;
+                            break;
+                        }
+
+                        lastCategory = currentCategory;
+                        currentCategory = currentCategory->nextCategory;
+
+                    } while (currentCategory != null);
+
+                    if (currentCategory == null)
+                        lastCategory->nextCategory = category;
+
+                }
+
+                break;
+        }
+
+    }
+
+    menu->numCategories++;
+
+}
+
+void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, SortOrder order){
+
+    ItemTypePtr currentItem = null;
+    ItemTypePtr lastItem = null;
+
+    if (category->headItem == null){
+
+        category->headItem = item;
+
+    } else {
+
+        switch (order){
+            case eSortOrderAsIs:
+
+                currentItem = category->headItem;
+
+                do {
+
+                    if (currentItem->nextItem == null){
+                        currentItem->nextItem = item;
+                        break;
+                    }
+
+                    currentItem = currentItem->nextItem;
+
+                } while (currentItem != null);
+
+                break;
+
+            case eSortOrderAscending:
+
+                currentItem = category->headItem;
+
+                /* string2 is less than string1 */
+                if (strcmp(currentItem->itemName, item->itemName) > 0){
+
+                    item->nextItem = currentItem;
+                    category->headItem = item;
+
+                } else {
+
+                    /* leave first item as is, search for item that is higher,
+                     *  and insert in the chain at that point*/
+
+                    lastItem = currentItem;
+                    currentItem = currentItem->nextItem;
+
+                    do {
+
+                        if (currentItem == null){
+                            lastItem->nextItem = item;
+                            break;
+                        }
+
+                        else if (strcmp(currentItem->itemName, item->itemName) > 0){
+                            item->nextItem = currentItem;
+                            lastItem->nextItem = item;
+                            break;
+                        }
+
+                        lastItem = currentItem;
+                        currentItem = currentItem->nextItem;
+
+                    } while (currentItem != null);
+
+                    if (currentItem == null)
+                        lastItem->nextItem = item;
+
+                }
+
+                break;
+
+            case eSortOrderDescending:
+
+                currentItem = category->headItem;
+
+                /* string1 is less than string2 */
+                if (strcmp(currentItem->itemName, item->itemName) < 0){
+
+                    item->nextItem = currentItem;
+                    category->headItem = item;
+
+                } else {
+
+                    /* leave first item as is, search for item that is lower,
+                     *  and insert in the chain at that point*/
+
+                    lastItem = currentItem;
+                    currentItem = currentItem->nextItem;
+
+                    do {
+
+                        if (currentItem == null){
+                            lastItem->nextItem = item;
+                            break;
+                        }
+
+                        else if (strcmp(currentItem->itemName, item->itemName) < 0){
+                            item->nextItem = currentItem;
+                            lastItem->nextItem = item;
+                            break;
+                        }
+
+                        lastItem = currentItem;
+                        currentItem = currentItem->nextItem;
+
+                    } while (currentItem != null);
+
+                    if (currentItem == null)
+                        lastItem->nextItem = item;
+
+                }
+
+                break;
+        }
+
+    }
+
+    category->numItems++;
+
+}
+
 bool validateItemPrice(const char* price){
 
     bool result = false;
@@ -214,65 +452,29 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
 
 }
 
-bool populateMenu(BCSType *menu, const char *line, bool isSubMenu){
+bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order){
 
-    bool result = true;
+    bool result = false;
     ItemTypePtr newItem = null;
-    ItemTypePtr currentItem = null;
+    CategoryTypePtr newCategory = null;
     CategoryTypePtr currentCategory = null;
-    static CategoryTypePtr lastCategory = null;
 
     if (isSubMenu){
 
         newItem = menuItemFromString(menu, line, &currentCategory);
 
         if (newItem){
-
-            if (currentCategory->headItem == null){
-
-                currentCategory->headItem = newItem;
-                currentCategory->numItems++;
-
-            } else {
-
-                currentItem = currentCategory->headItem;
-
-                do {
-
-                    if (currentItem->nextItem == null){
-                        currentItem->nextItem = newItem;
-                        currentCategory->numItems++;
-                        break;
-                    }
-
-                    currentItem = currentItem->nextItem;
-
-                } while (currentItem != null);
-
-            }
-
+            addItemToMenu(menu, currentCategory, newItem, eSortOrderAscending);
+            result = true;
         }
 
     } else {
 
-        if (lastCategory == null){
+        newCategory = menuCategoryFromString(menu, line);
 
-            menu->headCategory = menuCategoryFromString(menu, line);
-
-            if (menu->headCategory){
-                lastCategory = menu->headCategory;
-                menu->numCategories++;
-            }
-
-        } else {
-
-            lastCategory->nextCategory = menuCategoryFromString(menu, line);
-
-            if (lastCategory->nextCategory){
-                lastCategory = lastCategory->nextCategory;
-                menu->numCategories++;
-            }
-
+        if (newCategory){
+            addCategoryToMenu(menu, newCategory, eSortOrderAscending);
+            result = true;
         }
 
     }
@@ -331,7 +533,7 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
                 if (line[len2] == '\n')
                     line[len2] = 0;
 
-                if (!populateMenu(menu, line, isSubMenu)){
+                if (!populateMenu(menu, line, isSubMenu, eSortOrderAscending)){
                     freeStrings(2, &chunk, &line);
                     return result;
                 }
@@ -917,8 +1119,19 @@ bool fileExists(const char *fileName){
 }
 
 
+char *createDashes(const int length){
+
+    char *dashes = null;
+
+    if (allocateString(&dashes, length + EXTRA_SPACE))
+        memset(dashes, DASH_CHAR, length);
+
+    return dashes;
+
+}
+
 /* This function is used to underline a string in the console. */
-char *createDashes(const char *str){
+char *createDashesFromString(const char *str){
 
     const int len = strlen(str);
     const int max = (len << 1) + EXTRA_SPACES_DASH; /* including 2 \n's and \0*/

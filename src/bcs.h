@@ -204,6 +204,12 @@ typedef enum {
     eDrinkCold = COLD
 } CategoryDrink;
 
+typedef enum {
+    eSortOrderAsIs,
+    eSortOrderAscending,
+    eSortOrderDescending,
+} SortOrder;
+
 void exitApplication(int *abort);
 menuoption_t *getMenuOptions();
 
