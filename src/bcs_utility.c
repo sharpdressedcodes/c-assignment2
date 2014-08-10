@@ -112,7 +112,7 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                 currentCategory = menu->headCategory;
 
                 /* string2 is less than string1 */
-                if (strcmp(currentCategory->categoryName, category->categoryName) > 0){
+                if (strcasecmp(currentCategory->categoryName, category->categoryName) > 0){
 
                     category->nextCategory = currentCategory;
                     menu->headCategory = category;
@@ -133,7 +133,7 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                             break;
                         }
 
-                        else if (strcmp(currentCategory->categoryName, category->categoryName) > 0){
+                        else if (strcasecmp(currentCategory->categoryName, category->categoryName) > 0){
                             category->nextCategory = currentCategory;
                             lastCategory->nextCategory = category;
                             break;
@@ -156,7 +156,7 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                 currentCategory = menu->headCategory;
 
                 /* string1 is less than string2 */
-                if (strcmp(currentCategory->categoryName, category->categoryName) < 0){
+                if (strcasecmp(currentCategory->categoryName, category->categoryName) < 0){
 
                     category->nextCategory = currentCategory;
                     menu->headCategory = category;
@@ -177,7 +177,7 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                             break;
                         }
 
-                        else if (strcmp(currentCategory->categoryName, category->categoryName) < 0){
+                        else if (strcasecmp(currentCategory->categoryName, category->categoryName) < 0){
                             category->nextCategory = currentCategory;
                             lastCategory->nextCategory = category;
                             break;
@@ -236,7 +236,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                 currentItem = category->headItem;
 
                 /* string2 is less than string1 */
-                if (strcmp(currentItem->itemName, item->itemName) > 0){
+                if (strcasecmp(currentItem->itemName, item->itemName) > 0){
 
                     item->nextItem = currentItem;
                     category->headItem = item;
@@ -256,7 +256,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                             break;
                         }
 
-                        else if (strcmp(currentItem->itemName, item->itemName) > 0){
+                        else if (strcasecmp(currentItem->itemName, item->itemName) > 0){
                             item->nextItem = currentItem;
                             lastItem->nextItem = item;
                             break;
@@ -279,7 +279,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                 currentItem = category->headItem;
 
                 /* string1 is less than string2 */
-                if (strcmp(currentItem->itemName, item->itemName) < 0){
+                if (strcasecmp(currentItem->itemName, item->itemName) < 0){
 
                     item->nextItem = currentItem;
                     category->headItem = item;
@@ -299,7 +299,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                             break;
                         }
 
-                        else if (strcmp(currentItem->itemName, item->itemName) < 0){
+                        else if (strcasecmp(currentItem->itemName, item->itemName) < 0){
                             item->nextItem = currentItem;
                             lastItem->nextItem = item;
                             break;
