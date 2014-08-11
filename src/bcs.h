@@ -88,6 +88,8 @@ typedef BOOLEAN bool;
 #define MESSAGE_ERROR_MENU_EXIST "Error: Item %s already exists!\n"
 #define MESSAGE_ERROR_MENU_NOT_EXIST "Error: Item %s doesn't exist!\n"
 #define MESSAGE_ERROR_INVALID_TOKEN_ARGS "Error: Invalid number of tokens. Read %d, expecting %d\n"
+#define MESSAGE_DELETE_CATEGORY "Warning: All menu data for a menu category will be deleted if you proceed.\n"
+#define MESSAGE_DELETED_CATEGORY "Category \"%s - %s\" deleted from your system.\n"
 
 /* Menu Option Titles. */
 #define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
@@ -106,6 +108,8 @@ typedef BOOLEAN bool;
 #define HEADER_TITLE_SMALL "Small"
 #define HEADER_TITLE_MEDIUM "Med"
 #define HEADER_TITLE_LARGE "Large"
+
+#define INPUT_CATEGORY_ID "Menu Category ID: "
 
 #define FORMAT_DASHED_HEADER_TITLE "%s Drinks Summary"
 #define FORMAT_DASHED_HEADER_TOP1 "%s - %s (%d items)"

@@ -16,6 +16,8 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
 /* BCSType functions. */
+void freeCategories(BCSType* menu);
+void freeCategory(CategoryTypePtr category);
 char *createDashedHeader(CategoryTypePtr category);
 void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order);
 void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, SortOrder order);

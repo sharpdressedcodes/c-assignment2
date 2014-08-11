@@ -60,31 +60,44 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile)
 void systemFree(BCSType* menu)
 {
 
-    CategoryTypePtr cp = menu->headCategory;
-
-    while (cp){
-
-        CategoryTypePtr cp2 = &(*cp);
-        ItemTypePtr ip = cp->headItem;
-
-        while (ip){
-
-            ItemTypePtr ip2 = &(*ip);
-
-            ip = ip->nextItem;
-            free(ip2);
-
-        }
-
-        cp = cp->nextCategory;
-        free(cp2);
-
-    }
-
+    freeCategories(menu);
     systemInit(menu);
 
 }
 
+
+
+void freeCategories(BCSType* menu){
+
+    CategoryTypePtr cp = menu->headCategory;
+
+    while (cp){
+
+        CategoryTypePtr cp2 = cp;
+
+        cp = cp->nextCategory;
+        freeCategory(cp2);
+
+    }
+
+}
+
+void freeCategory(CategoryTypePtr category){
+
+    ItemTypePtr ip = category->headItem;
+
+    while (ip){
+
+        ItemTypePtr ip2 = ip;
+
+        ip = ip->nextItem;
+        free(ip2);
+
+    }
+
+    free(category);
+
+}
 
 char *createDashedHeader(CategoryTypePtr category){
 

@@ -94,13 +94,72 @@ void addCategory(BCSType* menu)
 {
 }
 
-
 /****************************************************************************
 * Menu option #4: Delete Category
 * Deletes a category and all corresponding items.
 ****************************************************************************/
 void deleteCategory(BCSType* menu)
 {
+
+    char *title = createDashesFromString(MENU_TITLE_DELETE_CATEGORY);
+    char catId[ID_LEN + EXTRA_SPACES] = {0};
+    bool result = false;
+    CategoryTypePtr cp = null;
+
+    printf("%s\n%s", title, MESSAGE_DELETE_CATEGORY);
+
+    while (!result){
+
+        memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
+        result = getStringFromStdIn(catId, ID_LEN, INPUT_CATEGORY_ID, MIN_STRING_NONE, true);
+
+        if (strlen(catId) == 0)
+            break;
+
+        cp = getCategoryFromId(menu, catId);
+
+        if (!cp){
+
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
+            result = false;
+
+        } else {
+
+            CategoryTypePtr lastCategory = menu->headCategory;
+
+            if (strcmp(lastCategory->categoryID, cp->categoryID) == 0){
+
+                menu->headCategory = lastCategory->nextCategory;
+                freeCategory(lastCategory);
+
+            } else {
+
+                CategoryTypePtr currentCategory = lastCategory->nextCategory;
+
+                while (currentCategory){
+
+                    if (strcmp(currentCategory->categoryID, cp->categoryID) == 0){
+                        lastCategory->nextCategory = currentCategory->nextCategory;
+                        freeCategory(currentCategory);
+                        break;
+                    }
+
+                    lastCategory = currentCategory;
+                    currentCategory = currentCategory->nextCategory;
+
+                }
+
+            }
+
+            menu->numCategories--;
+
+        }
+
+
+    }
+
+    freeString(&title);
+
 }
 
 
