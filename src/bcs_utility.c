@@ -86,6 +86,52 @@ void systemFree(BCSType* menu)
 }
 
 
+char *createDashedHeader(CategoryTypePtr category){
+
+    char bottom[MAX_STRING_LARGE] = {0};
+    char top[MAX_STRING_LARGE] = {0};
+    char top2[MAX_STRING_LARGE] = {0};
+    char *top3 = null;
+    char *result = null;
+    int i = 0;
+
+    sprintf(top,
+        FORMAT_DASHED_HEADER_TOP1,
+        category->categoryID,
+        category->categoryName,
+        category->numItems
+    );
+    sprintf(top2, FORMAT_DASHED_HEADER_TOP2, top);
+    top3 = createDashesFromString(top2);
+
+    sprintf(bottom,
+        FORMAT_DASHED_HEADER_BOTTOM,
+        HEADER_TITLE_ID,
+        HEADER_TITLE_NAME,
+        HEADER_TITLE_SMALL,
+        HEADER_TITLE_MEDIUM,
+        HEADER_TITLE_LARGE
+    );
+
+    memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * ID_LEN);
+    bottom[strlen(bottom)] = SPACE_CHAR;
+
+    memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * MAX_NAME_LEN);
+    bottom[strlen(bottom)] = SPACE_CHAR;
+
+    for (i = 0; i < NUM_PRICES; i++){
+        memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * ID_LEN);
+        bottom[strlen(bottom)] = SPACE_CHAR;
+    }
+
+    if (allocateString(&result, strlen(top3) + strlen(bottom) + EXTRA_SPACE))
+        sprintf(result, "%s%s", top3, bottom);
+
+    freeString(&top3);
+
+    return result;
+
+}
 
 void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order){
 

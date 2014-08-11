@@ -17,6 +17,7 @@
 /* Custom system-wide header files. */
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 #include <stdarg.h>
 
 /* System-wide constants. */
@@ -98,6 +99,24 @@ typedef BOOLEAN bool;
 #define MENU_TITLE_DELETE_ITEM "Delete Menu Item"
 #define MENU_TITLE_EXIT "Save & Exit"
 #define MENU_TITLE_ABORT "Abort"
+
+/* Header Titles/ */
+#define HEADER_TITLE_ID "ID"
+#define HEADER_TITLE_NAME "Name"
+#define HEADER_TITLE_SMALL "Small"
+#define HEADER_TITLE_MEDIUM "Med"
+#define HEADER_TITLE_LARGE "Large"
+
+#define FORMAT_DASHED_HEADER_TITLE "%s Drinks Summary"
+#define FORMAT_DASHED_HEADER_TOP1 "%s - %s (%d items)"
+#define FORMAT_DASHED_HEADER_TOP2 "%-42s"
+#define FORMAT_DASHED_HEADER_BOTTOM "   %-5s %-25s %-5s %-5s %-5s\n   "
+
+#define FORMAT_ITEM "%8s %-25s"
+#define FORMAT_PRICE " $%u.%02u"
+
+#define TITLE_HOT "Hot"
+#define TITLE_COLD "Cold"
 
 #define SPACE_CHAR ' '
 #define DASH_CHAR '-'
@@ -207,7 +226,7 @@ typedef enum {
 typedef enum {
     eSortOrderAsIs,
     eSortOrderAscending,
-    eSortOrderDescending,
+    eSortOrderDescending
 } SortOrder;
 
 void exitApplication(int *abort);

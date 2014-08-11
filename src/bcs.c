@@ -49,15 +49,11 @@ int main(int argc, char* argv[]){
 
         } else {
 
-
             /*************************************/
             /* uncomment below to test memory deallocation */
-
-            /*displaySummary(&menu, HOT);*/
-
-            systemFree(&menu);
+            /*systemFree(&menu);
             result = EXIT_SUCCESS;
-            return result;
+            return result;*/
             /*************************************/
 
             /* Append title. */
@@ -81,7 +77,6 @@ int main(int argc, char* argv[]){
             /* Append the request. */
             strcat(menuString, "\nSelect your option: ");
 
-
             /* Main menu loop. Abort will be modified when user selects "Exit". */
             while (!abort) {
 
@@ -94,11 +89,11 @@ int main(int argc, char* argv[]){
                     ptr = getMenuOptionByIndex(option);
 
                     switch (option){
-                    case 0:
-                        ptr->method(&menu, HOT);
-                        break;
                     case 1:
-                        ptr->method(&menu, COLD);
+                        ptr->method(&menu, eDrinkHot);
+                        break;
+                    case 2:
+                        ptr->method(&menu, eDrinkCold);
                         break;
                     case MAX_MENU_OPTION - 1:
                         ptr->method(&menu, menuFileName, subMenuFileName);

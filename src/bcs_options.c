@@ -21,51 +21,58 @@ void displaySummary(BCSType* menu, char drinkType)
     CategoryTypePtr cp = menu->headCategory;
     ItemTypePtr ip = null;
     char title[MAX_STRING_MEDIUM] = {0};
-    char subtitle[MAX_STRING_LARGE] = {0};
     char *titleDashes = null;
     char *subtitleDashes = null;
 
-    sprintf(title, "%s Drinks Summary", drinkType == eDrinkCold ? "Cold" : "Hot");
+    sprintf(title, FORMAT_DASHED_HEADER_TITLE, drinkType == eDrinkCold ? TITLE_COLD : TITLE_HOT);
     titleDashes = createDashesFromString(title);
 
-    fprintf(stdout, "%s\n", titleDashes);
+    if (!titleDashes)
+        return;
+
+    printf("%s\n", titleDashes);
+    freeString(&titleDashes);
 
     while (cp){
 
-        if (cp->drinkType != drinkType){
-            cp = cp->nextCategory ? cp->nextCategory : null;
-            continue;
-        }
+        if (cp->drinkType == drinkType){
 
-        ip = cp->headItem;
-        sprintf(subtitle, "%s - %s (%d items)", cp->categoryID, cp->categoryName, cp->numItems);
-/*        subtitleDashes = createDashesFromString(subtitle);*/
+            subtitleDashes = createDashedHeader(cp);
 
-        /*fputs(subtitleDashes, stdout);*/
-        /*printf("%s %s %s %s %s");*/
+            if (subtitleDashes){
 
-        /*while (ip){
+                printf("%s\n", subtitleDashes);
+                freeString(&subtitleDashes);
 
-            switch (drinkType){
-                case eDrinkHot:
+                ip = cp->headItem;
 
-                    break;
-                case eDrinkCold:
+                while (ip){
 
-                    break;
+                    int i = 0;
+                    char item[MAX_STRING_MEDIUM] = {0};
+
+                    sprintf(item, FORMAT_ITEM, ip->itemID, ip->itemName);
+
+                    for (i = 0; i < NUM_PRICES; i++){
+                        char price[MAX_STRING_SMALL] = {0};
+                        sprintf(price, FORMAT_PRICE, ip->prices[i].dollars, ip->prices[i].cents);
+                        strcat(item, price);
+                    }
+
+                    printf("%s\n", item);
+
+                    ip = ip->nextItem;
+
+                }
+
+                printf("\n");
+
             }
-
-            ip = ip->nextItem;
-
-        }*/
+        }
 
         cp = cp->nextCategory;
 
     }
-
-    /*freeStrings(2, &titleDashes, &subtitleDashes);*/
-    freeString(&titleDashes);
-/*    freeString(&subtitleDashes);*/
 
 }
 
