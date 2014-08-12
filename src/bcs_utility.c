@@ -863,7 +863,7 @@ bool getIntegerFromStdIn(int *result, const int length, const char *message,
  * URL: https://www.dlsweb.rmit.edu.au/set/Courses/Content/CSIT/oua/cpt220/c-function-examples/InputValidation/getString-advanced.c
  * */
 bool getStringFromStdIn(char *result, int length, const char *message,
-        int min, bool showError){
+        int min, bool showError, bool allowEmpty){
 
     char *s = null;
     char errorMessage[MAX_STRING_MEDIUM] = {0};
@@ -895,15 +895,17 @@ bool getStringFromStdIn(char *result, int length, const char *message,
             readRestOfLine();
 
         /* Did the user enter anything? Or did they enter a long string? */
-        if (len < EXTRA_SPACES || s[len - 1] != '\n') {
+        if (len < min || s[len - 1] != '\n') {
 
             /* Are we allowed to not enter anything? Abort if so. */
-            if (len < EXTRA_SPACES && min == MIN_STRING_NONE)
+            if (len < EXTRA_SPACES && allowEmpty)
                 passed = true;
 
             /* Inform the user that they screwed up. */
             else if (showError)
                 fputs(errorMessage, stderr);
+
+            memset(result, 0, sizeof(char) * 1);
 
         /* The user entered a valid string. */
         } else {

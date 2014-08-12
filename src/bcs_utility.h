@@ -37,7 +37,7 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
 bool getIntegerFromStdIn(int *result, const int length, const char *message,
         const int min, const int max, bool showError, bool allowEmpty);
 bool getStringFromStdIn(char *result, const int length, const char *message,
-        const int min, bool showError);
+        const int min, bool showError, bool allowEmpty);
 
 int getLineFromStream(char **result, FILE *stream, bool stripNewLine);
 int getFirstLineFromFile(char **result, const char *fileName);

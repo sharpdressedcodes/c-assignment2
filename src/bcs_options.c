@@ -92,6 +92,9 @@ void categoryReport(BCSType* menu)
 ****************************************************************************/
 void addCategory(BCSType* menu)
 {
+
+
+
 }
 
 /****************************************************************************
@@ -115,7 +118,7 @@ void deleteCategory(BCSType* menu)
     while (!result){
 
         memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true);
+        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
 
         if (strlen(catId) == 0)
             break;
@@ -199,7 +202,7 @@ void deleteItem(BCSType* menu)
     while (!result){
 
         memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true);
+        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true, true);
 
         if (strlen(catId) == 0)
             break;
@@ -224,7 +227,7 @@ void deleteItem(BCSType* menu)
         while (!result){
 
             memset(itemId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-            result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true);
+            result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true, true);
 
             if (strlen(itemId) == 0)
                 break;
