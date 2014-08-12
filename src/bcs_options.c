@@ -85,7 +85,6 @@ void categoryReport(BCSType* menu)
 {
 }
 
-
 /****************************************************************************
 * Menu option #3: Add Category
 * Allows the user to add a new category record to the linked list.
@@ -93,7 +92,91 @@ void categoryReport(BCSType* menu)
 void addCategory(BCSType* menu)
 {
 
+    bool result = false;
+    char catName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
+    char catDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
+    char catType[EXTRA_SPACES] = {0};
+    char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    char message[MAX_STRING_LARGE] = {0};
+    char *line = null;
+    char *title = createDashesFromString(MENU_TITLE_ADD_CATEGORY);
+    char **tokens = calloc(eCategoryMax, sizeof(char*));
+    int i = 0;
 
+    if (!tokens){
+        fprintf(stderr, MESSAGE_ERROR_NO_MEMORY);
+        freeString(&title);
+        return;
+    }
+
+    for (i = 0; i < eCategoryMax; i++)
+        tokens[i] = null;
+
+    tokens[eCategoryId] = generateCategoryId(menu);
+
+    if (!tokens[eCategoryId]){
+        freeString(&title);
+        return;
+    }
+
+    sprintf(message, INPUT_CATEGORY_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
+    printf("%s\n%s%s\n", title, INPUT_NEW_CATEGORY_ID, tokens[eCategoryId]);
+    freeString(&title);
+
+    while (!result){
+        memset(catName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(catName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+    }
+
+    if (strlen(catName)){
+
+        tokens[eCategoryName] = copyString(catName);
+        result = false;
+
+        while (!result){
+
+            catType[0] = 0;
+            result = getStringFromStdIn(catType, DRINK_LEN, INPUT_CATEGORY_TYPE, DRINK_LEN, true, true);
+
+            if (strlen(catType)){
+
+                freeString(&tokens[eCategoryType]);
+                tokens[eCategoryType] = copyString(catType);
+                result = validateCategoryToken(tokens, eCategoryType, true);
+
+            }
+
+        }
+
+        if (strlen(catType)){
+
+            memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
+            sprintf(message, INPUT_CATEGORY_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
+            result = false;
+
+            while (!result){
+                memset(catDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
+                result = getStringFromStdIn(catDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+            }
+
+            if (strlen(catDesc)){
+
+                tokens[eCategoryDescription] = copyString(catDesc);
+
+                line = implode(delim, tokens, eCategoryMax);
+
+                if (line){
+                    populateMenu(menu, line, false, DEFAULT_SORT_ORDER);
+                    freeString(&line);
+                }
+
+            }
+
+        }
+
+    }
+
+    freeDynamicStringArray(&tokens, eCategoryMax);
 
 }
 

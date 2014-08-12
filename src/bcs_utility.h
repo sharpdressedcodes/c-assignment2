@@ -16,6 +16,8 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
 /* BCSType functions. */
+char *generateCategoryId(BCSType *menu);
+char *generateItemId(BCSType *menu);
 void freeCategories(BCSType* menu);
 void freeCategory(CategoryTypePtr category);
 char *createDashedHeader(CategoryTypePtr category);
@@ -54,6 +56,8 @@ char *copyString(const char *str);
 bool isNumeric(const char *str);
 bool stringToInteger(const char *str, int *result);
 int explode(const char *delimeter, const char *str, char ***array);
+char *implode(const char *delimeter, char **array, const int length);
+int generateRandomNumber(const int min, const int max);
 
 /* FILE functions. */
 bool fileExists(const char *fileName);

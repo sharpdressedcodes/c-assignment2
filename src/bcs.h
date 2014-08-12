@@ -19,6 +19,7 @@
 #include <string.h>
 #include <strings.h>
 #include <stdarg.h>
+#include <time.h>
 
 /* System-wide constants. */
 #define ID_LEN 5
@@ -114,6 +115,11 @@ typedef BOOLEAN bool;
 
 #define INPUT_CATEGORY_ID "Category ID (%d characters): "
 #define INPUT_ITEM_ID "Item ID (%d characters): "
+#define INPUT_NEW_CATEGORY_ID "New Category ID is: "
+#define INPUT_NEW_ITEM_ID "New Item ID is: "
+#define INPUT_CATEGORY_NAME "Category Name (%d-%d characters): "
+#define INPUT_CATEGORY_TYPE "(H)ot or (C)old drink?: "
+#define INPUT_CATEGORY_DESCRIPTION "Description (%d-%d characters): "
 
 #define FORMAT_DASHED_HEADER_TITLE "%s Drinks Summary"
 #define FORMAT_DASHED_HEADER_TOP1 "%s - %s (%d items)"
@@ -130,11 +136,16 @@ typedef BOOLEAN bool;
 #define DASH_CHAR '-'
 #define INPUT_SEPARATOR_CHAR '|'
 #define PRICE_SEPARATOR_CHAR '.'
+#define CATEGORY_PREFIX_CHAR 'C'
+#define ITEM_PREFIX_CHAR 'I'
 
 #define EXPECTED_CATEGORY_ARG_INDEX 1
 #define EXPECTED_ITEM_ARG_INDEX EXPECTED_CATEGORY_ARG_INDEX + 1
 
 #define DEFAULT_SORT_ORDER eSortOrderAscending
+
+#define RANDOM_ID_MIN 1
+#define RANDOM_ID_MAX 9999
 /* End Custom Types */
 
 

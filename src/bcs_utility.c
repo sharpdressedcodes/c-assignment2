@@ -36,6 +36,8 @@ void systemInit(BCSType* menu)
     menu->headCategory = null;
     menu->numCategories = 0;
 
+    srand(time(null));
+
 }
 
 /****************************************************************************
@@ -66,6 +68,55 @@ void systemFree(BCSType* menu)
 }
 
 
+
+
+char *generateCategoryId(BCSType *menu){
+
+    char *result = null;
+    int random = 0;
+    ItemTypePtr item = null;
+
+    if (allocateString(&result, ID_LEN + EXTRA_SPACE)){
+
+        do {
+
+            random = generateRandomNumber(RANDOM_ID_MIN, RANDOM_ID_MAX);
+            memset(result, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
+            sprintf(result, "%c%04d", CATEGORY_PREFIX_CHAR, random);
+
+            item = getItemFromId(menu, result);
+
+        } while (item);
+
+    }
+
+    return result;
+
+}
+
+char *generateItemId(BCSType *menu){
+
+    char *result = null;
+    int random = 0;
+    ItemTypePtr item = null;
+
+    if (allocateString(&result, ID_LEN + EXTRA_SPACE)){
+
+        do {
+
+            random = generateRandomNumber(RANDOM_ID_MIN, RANDOM_ID_MAX);
+            memset(result, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
+            sprintf(result, "%c%04d", ITEM_PREFIX_CHAR, random);
+
+            item = getItemFromId(menu, result);
+
+        } while (item);
+
+    }
+
+    return result;
+
+}
 
 void freeCategories(BCSType* menu){
 
@@ -117,24 +168,28 @@ char *createDashedHeader(CategoryTypePtr category){
     sprintf(top2, FORMAT_DASHED_HEADER_TOP2, top);
     top3 = createDashesFromString(top2);
 
-    sprintf(bottom,
-        FORMAT_DASHED_HEADER_BOTTOM,
-        HEADER_TITLE_ID,
-        HEADER_TITLE_NAME,
-        HEADER_TITLE_SMALL,
-        HEADER_TITLE_MEDIUM,
-        HEADER_TITLE_LARGE
-    );
+    if (category->numItems){
 
-    memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * ID_LEN);
-    bottom[strlen(bottom)] = SPACE_CHAR;
+        sprintf(bottom,
+            FORMAT_DASHED_HEADER_BOTTOM,
+            HEADER_TITLE_ID,
+            HEADER_TITLE_NAME,
+            HEADER_TITLE_SMALL,
+            HEADER_TITLE_MEDIUM,
+            HEADER_TITLE_LARGE
+        );
 
-    memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * MAX_NAME_LEN);
-    bottom[strlen(bottom)] = SPACE_CHAR;
-
-    for (i = 0; i < NUM_PRICES; i++){
         memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * ID_LEN);
         bottom[strlen(bottom)] = SPACE_CHAR;
+
+        memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * MAX_NAME_LEN);
+        bottom[strlen(bottom)] = SPACE_CHAR;
+
+        for (i = 0; i < NUM_PRICES; i++){
+            memset(bottom + strlen(bottom), DASH_CHAR, sizeof(char) * ID_LEN);
+            bottom[strlen(bottom)] = SPACE_CHAR;
+        }
+
     }
 
     if (allocateString(&result, strlen(top3) + strlen(bottom) + EXTRA_SPACE))
@@ -1151,6 +1206,37 @@ int explode(const char *delimeter, const char *str, char ***array){
 
 }
 
+char *implode(const char *delimeter, char **array, const int length){
+
+    int len = 0;
+    int i = 0;
+    char *result = null;
+
+    for (i = 0; i < length; i++)
+        len += strlen(array[i]) + (i < length - 1 ? strlen(delimeter) : 0);
+
+    len += EXTRA_SPACE;
+
+    if (allocateString(&result, len)){
+
+        for (i = 0; i < length; i++){
+
+            if (!i)
+                strcpy(result, array[i]);
+            else
+                strcat(result, array[i]);
+
+            if (i < length - 1)
+                strcat(result, delimeter);
+
+        }
+
+    }
+
+    return result;
+
+}
+
 bool stringToInteger(const char *str, int *result){
 
     bool succeeded = false;
@@ -1195,7 +1281,11 @@ bool isNumeric(const char *str){
 
 }
 
+int generateRandomNumber(const int min, const int max){
 
+    return min + (rand() % max);
+
+}
 
 /****************************************************************************
 * Test for file existence.
