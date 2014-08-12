@@ -88,8 +88,11 @@ typedef BOOLEAN bool;
 #define MESSAGE_ERROR_MENU_EXIST "Error: Item %s already exists!\n"
 #define MESSAGE_ERROR_MENU_NOT_EXIST "Error: Item %s doesn't exist!\n"
 #define MESSAGE_ERROR_INVALID_TOKEN_ARGS "Error: Invalid number of tokens. Read %d, expecting %d\n"
+#define MESSAGE_ERROR_ARG_CATEGORY_ORDER "Error: You must have the menu file as #%d command-line arg.\n"
+#define MESSAGE_ERROR_ARG_ITEM_ORDER "Error: You must have the sub menu file as #%d command-line arg.\n"
 #define MESSAGE_DELETE_CATEGORY "Warning: All menu data for a menu category will be deleted if you proceed.\n"
-#define MESSAGE_DELETED_CATEGORY "Category \"%s - %s\" deleted from your system.\n"
+#define MESSAGE_DELETED_CATEGORY "Category \"%s - %s\" deleted from the system.\n"
+#define MESSAGE_DELETED_ITEM "Item \"%s - %s\" deleted from the system.\n"
 
 /* Menu Option Titles. */
 #define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
@@ -109,7 +112,8 @@ typedef BOOLEAN bool;
 #define HEADER_TITLE_MEDIUM "Med"
 #define HEADER_TITLE_LARGE "Large"
 
-#define INPUT_CATEGORY_ID "Menu Category ID: "
+#define INPUT_CATEGORY_ID "Category ID (%d characters): "
+#define INPUT_ITEM_ID "Item ID (%d characters): "
 
 #define FORMAT_DASHED_HEADER_TITLE "%s Drinks Summary"
 #define FORMAT_DASHED_HEADER_TOP1 "%s - %s (%d items)"
@@ -126,6 +130,11 @@ typedef BOOLEAN bool;
 #define DASH_CHAR '-'
 #define INPUT_SEPARATOR_CHAR '|'
 #define PRICE_SEPARATOR_CHAR '.'
+
+#define EXPECTED_CATEGORY_ARG_INDEX 1
+#define EXPECTED_ITEM_ARG_INDEX EXPECTED_CATEGORY_ARG_INDEX + 1
+
+#define DEFAULT_SORT_ORDER eSortOrderAscending
 /* End Custom Types */
 
 

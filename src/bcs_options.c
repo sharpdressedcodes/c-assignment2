@@ -103,15 +103,19 @@ void deleteCategory(BCSType* menu)
 
     char *title = createDashesFromString(MENU_TITLE_DELETE_CATEGORY);
     char catId[ID_LEN + EXTRA_SPACES] = {0};
+    char message[MAX_STRING_SMALL] = {0};
     bool result = false;
     CategoryTypePtr cp = null;
 
     printf("%s\n%s", title, MESSAGE_DELETE_CATEGORY);
+    freeString(&title);
+
+    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
 
     while (!result){
 
         memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, INPUT_CATEGORY_ID, MIN_STRING_NONE, true);
+        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true);
 
         if (strlen(catId) == 0)
             break;
@@ -130,6 +134,7 @@ void deleteCategory(BCSType* menu)
             if (strcmp(lastCategory->categoryID, cp->categoryID) == 0){
 
                 menu->headCategory = lastCategory->nextCategory;
+                printf(MESSAGE_DELETED_CATEGORY, lastCategory->categoryID, lastCategory->categoryName);
                 freeCategory(lastCategory);
 
             } else {
@@ -140,6 +145,7 @@ void deleteCategory(BCSType* menu)
 
                     if (strcmp(currentCategory->categoryID, cp->categoryID) == 0){
                         lastCategory->nextCategory = currentCategory->nextCategory;
+                        printf(MESSAGE_DELETED_CATEGORY, currentCategory->categoryID, currentCategory->categoryName);
                         freeCategory(currentCategory);
                         break;
                     }
@@ -155,10 +161,7 @@ void deleteCategory(BCSType* menu)
 
         }
 
-
     }
-
-    freeString(&title);
 
 }
 
@@ -179,6 +182,94 @@ void addItem(BCSType* menu)
 ****************************************************************************/
 void deleteItem(BCSType* menu)
 {
+
+    char *title = createDashesFromString(MENU_TITLE_DELETE_ITEM);
+    char catId[ID_LEN + EXTRA_SPACES] = {0};
+    char itemId[ID_LEN + EXTRA_SPACES] = {0};
+    char message[MAX_STRING_SMALL] = {0};
+    bool result = false;
+    CategoryTypePtr category = null;
+    ItemTypePtr item = null;
+
+    printf("%s\n", title);
+    freeString(&title);
+
+    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
+
+    while (!result){
+
+        memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
+        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true);
+
+        if (strlen(catId) == 0)
+            break;
+
+        category = getCategoryFromId(menu, catId);
+
+        if (!category){
+
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
+            result = false;
+
+        }
+
+    }
+
+    if (category){
+
+        memset(message, 0, sizeof(char) * MAX_STRING_SMALL);
+        sprintf(message, INPUT_ITEM_ID, ID_LEN);
+        result = false;
+
+        while (!result){
+
+            memset(itemId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
+            result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true);
+
+            if (strlen(itemId) == 0)
+                break;
+
+            item = getItemFromId(menu, itemId);
+
+            if (!item){
+                fprintf(stderr, MESSAGE_ERROR_MENU_NOT_EXIST, itemId);
+                result = false;
+            }
+
+        }
+
+        if (item){
+
+            if (strcmp(category->headItem->itemID, itemId) == 0){
+
+                category->headItem = item->nextItem;
+
+            } else {
+
+                ItemTypePtr prev = category->headItem;
+                ItemTypePtr current = prev->nextItem;
+
+                while (current){
+
+                    if (strcmp(current->itemID, itemId) == 0){
+                        prev->nextItem = item->nextItem;
+                        break;
+                    }
+
+                    prev = current;
+                    current = current->nextItem;
+                }
+
+            }
+
+            printf(MESSAGE_DELETED_ITEM, item->itemID, item->itemName);
+            category->numItems--;
+            free(item);
+
+        }
+
+    }
+
 }
 
 

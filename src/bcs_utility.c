@@ -69,14 +69,14 @@ void systemFree(BCSType* menu)
 
 void freeCategories(BCSType* menu){
 
-    CategoryTypePtr cp = menu->headCategory;
+    CategoryTypePtr current = menu->headCategory;
 
-    while (cp){
+    while (current){
 
-        CategoryTypePtr cp2 = cp;
+        CategoryTypePtr prev = current;
 
-        cp = cp->nextCategory;
-        freeCategory(cp2);
+        current = current->nextCategory;
+        freeCategory(prev);
 
     }
 
@@ -84,14 +84,14 @@ void freeCategories(BCSType* menu){
 
 void freeCategory(CategoryTypePtr category){
 
-    ItemTypePtr ip = category->headItem;
+    ItemTypePtr current = category->headItem;
 
-    while (ip){
+    while (current){
 
-        ItemTypePtr ip2 = ip;
+        ItemTypePtr prev = current;
 
-        ip = ip->nextItem;
-        free(ip2);
+        current = current->nextItem;
+        free(prev);
 
     }
 
@@ -514,25 +514,24 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
 bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order){
 
     bool result = false;
-    ItemTypePtr newItem = null;
-    CategoryTypePtr newCategory = null;
-    CategoryTypePtr currentCategory = null;
+    ItemTypePtr item = null;
+    CategoryTypePtr category = null;
 
     if (isSubMenu){
 
-        newItem = menuItemFromString(menu, line, &currentCategory);
+        item = menuItemFromString(menu, line, &category);
 
-        if (newItem){
-            addItemToMenu(menu, currentCategory, newItem, eSortOrderAscending);
+        if (item){
+            addItemToMenu(menu, category, item, order);
             result = true;
         }
 
     } else {
 
-        newCategory = menuCategoryFromString(menu, line);
+        category = menuCategoryFromString(menu, line);
 
-        if (newCategory){
-            addCategoryToMenu(menu, newCategory, eSortOrderAscending);
+        if (category){
+            addCategoryToMenu(menu, category, order);
             result = true;
         }
 
@@ -546,12 +545,8 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
 
     FILE *fp = null;
     bool result = false;
-    bool moreChunks = false;
-    char *chunk = null;
     char *line = null;
-    int power = 0;
     int len = 0;
-    const int chunkSize = MAX_STRING_SMALL;
 
     fp = fopen(fileName, "r");
 
@@ -559,44 +554,12 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
 
         do {
 
-            power = 0;
+            len = getLineFromStream(&line, fp, true);
 
-            do {
-
-                const int lineSize = chunkSize * ++power;
-
-                if (!allocateString(&chunk, chunkSize) || !allocateString(&line, lineSize)){
-                    freeStrings(2, &chunk, &line);
-                    return result;
-                }
-
-                fgets(chunk, chunkSize, fp);
-                len = strlen(chunk);
-                moreChunks = len > 0 && chunk[len - 1] != '\n';
-
-                if (len > 0){
-                    if (power > 1)
-                        strncat(line, chunk, len);
-                    else
-                        strncpy(line, chunk, len);
-                }
-
-                freeString(&chunk);
-
-            } while (moreChunks);
-
-            if (len > 0){
-
-                int len2 = strlen(line) - 1;
-
-                if (line[len2] == '\n')
-                    line[len2] = 0;
-
-                if (!populateMenu(menu, line, isSubMenu, eSortOrderAscending)){
-                    freeStrings(2, &chunk, &line);
-                    return result;
-                }
-
+            if (len > 0 && !populateMenu(menu, line, isSubMenu, DEFAULT_SORT_ORDER)){
+                freeString(&line);
+                fclose(fp);
+                return result;
             }
 
             freeString(&line);
@@ -965,6 +928,78 @@ bool getStringFromStdIn(char *result, int length, const char *message,
 
 }
 
+int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
+
+    bool moreChunks = false;
+    char *chunk = null;
+    char *line = null;
+    int power = 0;
+    int len = 0;
+    const int chunkSize = MAX_STRING_SMALL;
+
+    if (stream){
+
+        power = 0;
+
+        do {
+
+            const int lineSize = chunkSize * ++power;
+
+            if (!allocateString(&chunk, chunkSize) || !allocateString(&line, lineSize)){
+                freeStrings(2, &chunk, &line);
+                return len;
+            }
+
+            fgets(chunk, chunkSize, stream);
+            len = strlen(chunk);
+            moreChunks = len > 0 && chunk[len - 1] != '\n';
+            /*moreChunks = len > 0 && strchr(chunk, '\n') == null;*/
+
+            if (len > 0){
+                if (power > 1)
+                    strncat(line, chunk, len);
+                else
+                    strncpy(line, chunk, len);
+            }
+
+            freeString(&chunk);
+
+        } while (moreChunks);
+
+
+        if (len > 0){
+
+            if (stripNewLine && line[strlen(line) - 1] == '\n')
+                line[strlen(line) - 1] = 0;
+
+            /* TODO: is this ok? or should we return a null-terminated empty string instead? */
+            if (strlen(line) > 0)
+                *result = copyString(line);
+
+        }
+
+        freeString(&line);
+
+    }
+
+    return len;
+
+}
+
+int getFirstLineFromFile(char **result, const char *fileName){
+
+    int len = 0;
+    FILE *fp = fopen(fileName, "r");
+
+    if (fp){
+        len = getLineFromStream(result, fp, true);
+        fclose(fp);
+    }
+
+    return len;
+
+}
+
 
 
 /* This function is used for dynamic string allocation.
@@ -1067,7 +1102,7 @@ char *copyString(const char *str){
 
     int i = 0;
     size_t len = strlen(str);
-    char *s = malloc(sizeof(char) * (len + 1));
+    char *s = malloc(sizeof(char) * (len + EXTRA_SPACE));
 
     if (!s){
         fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
@@ -1158,6 +1193,8 @@ bool isNumeric(const char *str){
 
 }
 
+
+
 /****************************************************************************
 * Test for file existence.
 ****************************************************************************/
@@ -1176,6 +1213,59 @@ bool fileExists(const char *fileName){
     return result;
 
 }
+
+bool checkArgumentOrder(char* argv[]){
+
+    bool result = false;
+    char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    char *line = null;
+    char **arr = null;
+    int len = 0;
+
+    len = getFirstLineFromFile(&line, argv[EXPECTED_CATEGORY_ARG_INDEX]);
+
+    if (len > 0){
+
+        len = explode(delim, line, &arr);
+        freeString(&line);
+        freeDynamicStringArray(&arr, len);
+
+        if (len != eCategoryMax){
+            fprintf(stderr, MESSAGE_ERROR_ARG_CATEGORY_ORDER, EXPECTED_CATEGORY_ARG_INDEX);
+
+        } else {
+
+            len = getFirstLineFromFile(&line, argv[EXPECTED_ITEM_ARG_INDEX]);
+
+            if (len > 0){
+
+                len = explode(delim, line, &arr);
+                freeString(&line);
+                freeDynamicStringArray(&arr, len);
+
+                if (len != eMenuMax)
+                    fprintf(stderr, MESSAGE_ERROR_ARG_ITEM_ORDER, EXPECTED_ITEM_ARG_INDEX);
+                else
+                    result = true;
+
+            }
+
+        }
+
+    }
+
+    return result;
+
+}
+
+void fixConsole(FILE *stream){
+
+    /* Stupid Eclipse won't show the console until after it has stopped.
+    * See http://stackoverflow.com/questions/13035075/printf-not-printing-on-console */
+    setvbuf(stream, NULL, _IONBF, 0);
+
+}
+
 
 
 char *createDashes(const int length){

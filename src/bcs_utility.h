@@ -39,6 +39,9 @@ bool getIntegerFromStdIn(int *result, const int length, const char *message,
 bool getStringFromStdIn(char *result, const int length, const char *message,
         const int min, bool showError);
 
+int getLineFromStream(char **result, FILE *stream, bool stripNewLine);
+int getFirstLineFromFile(char **result, const char *fileName);
+
 /* Dynamic memory functions. */
 bool allocateString(char **str, const int size);
 void freeString(char **str);
@@ -54,6 +57,8 @@ int explode(const char *delimeter, const char *str, char ***array);
 
 /* FILE functions. */
 bool fileExists(const char *fileName);
+bool checkArgumentOrder(char* argv[]);
+void fixConsole(FILE *stream);
 
 /* General helper functions. */
 char *createDashes(const int length);
