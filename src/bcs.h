@@ -84,6 +84,7 @@ typedef BOOLEAN bool;
 #define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long! (max: %d)\n"
 #define MESSAGE_ERROR_LOAD_DATA_FAIL "Error: Can't load data from file %s and %s\n"
 #define MESSAGE_ERROR_INVALID_TOKEN "Error: %s token %s is invalid (index: %d)!\n"
+#define MESSAGE_ERROR_INVALID_PRICE "Error: price is invalid!\n"
 #define MESSAGE_ERROR_CATEGORY_EXIST "Error: Category %s already exists!\n"
 #define MESSAGE_ERROR_CATEGORY_NOT_EXIST "Error: Category %s doesn't exist!\n"
 #define MESSAGE_ERROR_MENU_EXIST "Error: Item %s already exists!\n"
@@ -119,7 +120,11 @@ typedef BOOLEAN bool;
 #define INPUT_NEW_ITEM_ID "New Item ID is: "
 #define INPUT_CATEGORY_NAME "Category Name (%d-%d characters): "
 #define INPUT_CATEGORY_TYPE "(H)ot or (C)old drink?: "
-#define INPUT_CATEGORY_DESCRIPTION "Description (%d-%d characters): "
+#define INPUT_DESCRIPTION "Description (%d-%d characters): "
+#define INPUT_ITEM_NAME "Item name (%d-%d characters): "
+#define INPUT_ITEM_PRICE_SMALL "Small Price (%c%s-%c%s): "
+#define INPUT_ITEM_PRICE_MEDIUM "Medium Price (%c%s-%c%s): "
+#define INPUT_ITEM_PRICE_LARGE "Large Price (%c%s-%c%s): "
 
 #define FORMAT_DASHED_HEADER_TITLE "%s Drinks Summary"
 #define FORMAT_DASHED_HEADER_TOP1 "%s - %s (%d items)"
@@ -138,6 +143,7 @@ typedef BOOLEAN bool;
 #define PRICE_SEPARATOR_CHAR '.'
 #define CATEGORY_PREFIX_CHAR 'C'
 #define ITEM_PREFIX_CHAR 'I'
+#define CURRENCY_CHAR '$'
 
 #define EXPECTED_CATEGORY_ARG_INDEX 1
 #define EXPECTED_ITEM_ARG_INDEX EXPECTED_CATEGORY_ARG_INDEX + 1
@@ -146,6 +152,14 @@ typedef BOOLEAN bool;
 
 #define RANDOM_ID_MIN 1
 #define RANDOM_ID_MAX 9999
+
+#define MIN_ITEM_PRICE "0.05"
+#define MAX_ITEM_PRICE "9.95"
+
+#define PRICE_LEN 4
+#define DOLLARS_LEN 1
+#define CENTS_LEN 2
+
 /* End Custom Types */
 
 

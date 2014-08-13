@@ -438,21 +438,34 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
 
 }
 
-bool validateItemPrice(const char* price){
+bool validateItemPrice(const char* price, bool showError){
 
     bool result = false;
     const char delim[] = {PRICE_SEPARATOR_CHAR, 0};
     char **tokens = null;
     const int count = explode(delim, price, &tokens);
     int i = 0;
+    int len = 0;
 
     if (count == PRICE_TOKEN_COUNT){
 
-        for (i = 0, result = true; i < count && result; i++)
-            if (!isNumeric(tokens[i]))
+        for (i = 0, result = true; i < count && result; i++){
+            switch (i){
+                case ePriceDollars:
+                    len = DOLLARS_LEN;
+                    break;
+                case ePriceCents:
+                    len = CENTS_LEN;
+                    break;
+            }
+            if (strlen(tokens[i]) != len || !isNumeric(tokens[i]))
                 result = false;
+        }
 
     }
+
+    if (!result && showError)
+        fprintf(stderr, MESSAGE_ERROR_INVALID_PRICE);
 
     freeDynamicStringArray(&tokens, count);
 
@@ -543,17 +556,17 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
 
         case eMenuPrice1:
 
-            result = validateItemPrice(s);
+            result = validateItemPrice(s, false);
             break;
 
         case eMenuPrice2:
 
-            result = validateItemPrice(s);
+            result = validateItemPrice(s, false);
             break;
 
         case eMenuPrice3:
 
-            result = validateItemPrice(s);
+            result = validateItemPrice(s, false);
             break;
 
         case eMenuDescription:
@@ -561,6 +574,9 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
             result = (len > MIN_DESC_LEN - 1 && len < MAX_DESC_LEN + 1);
             break;
     }
+
+    if (!result && showError)
+        fprintf(stderr, MESSAGE_ERROR_INVALID_TOKEN, "Item", s, token);
 
     return result;
 
@@ -950,7 +966,7 @@ bool getStringFromStdIn(char *result, int length, const char *message,
             readRestOfLine();
 
         /* Did the user enter anything? Or did they enter a long string? */
-        if (len < min || s[len - 1] != '\n') {
+        if (len < min + EXTRA_SPACE || s[len - 1] != '\n') {
 
             /* Are we allowed to not enter anything? Abort if so. */
             if (len < EXTRA_SPACES && allowEmpty)

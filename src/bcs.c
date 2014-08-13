@@ -52,7 +52,10 @@ int main(int argc, char* argv[]){
 
             /*************************************/
             /* uncomment below to test memory deallocation */
-            /*systemFree(&menu);
+
+            /*addItem(&menu);
+
+            systemFree(&menu);
             result = EXIT_SUCCESS;
             return result;*/
             /*************************************/

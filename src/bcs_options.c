@@ -96,7 +96,7 @@ void addCategory(BCSType* menu)
     char catName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
     char catDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
     char catType[EXTRA_SPACES] = {0};
-    char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
     char message[MAX_STRING_LARGE] = {0};
     char *line = null;
     char *title = createDashesFromString(MENU_TITLE_ADD_CATEGORY);
@@ -115,6 +115,7 @@ void addCategory(BCSType* menu)
     tokens[eCategoryId] = generateCategoryId(menu);
 
     if (!tokens[eCategoryId]){
+        fprintf(stderr, MESSAGE_ERROR_NO_MEMORY);
         freeString(&title);
         return;
     }
@@ -151,7 +152,7 @@ void addCategory(BCSType* menu)
         if (strlen(catType)){
 
             memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
-            sprintf(message, INPUT_CATEGORY_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
+            sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
             result = false;
 
             while (!result){
@@ -251,7 +252,6 @@ void deleteCategory(BCSType* menu)
 
 }
 
-
 /****************************************************************************
 * Menu option #5: Add Item
 * Allows the user to add a new item to an existing category. An error 
@@ -259,6 +259,140 @@ void deleteCategory(BCSType* menu)
 ****************************************************************************/
 void addItem(BCSType* menu)
 {
+
+    bool result = false;
+    bool priceResult = false;
+    char catId[ID_LEN + EXTRA_SPACE] = {0};
+    char itemName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
+    char itemDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
+    char itemPrices[NUM_PRICES][PRICE_LEN + EXTRA_SPACE] = {{0}};
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    char message[MAX_STRING_LARGE] = {0};
+    char *line = null;
+    char *title = null;
+    char **tokens = calloc(eMenuMax, sizeof(char*));
+    int i = 0;
+
+    if (!tokens){
+        fprintf(stderr, MESSAGE_ERROR_NO_MEMORY);
+        return;
+    }
+
+    for (i = 0; i < eMenuMax; i++)
+        tokens[i] = null;
+
+    tokens[eMenuId] = generateItemId(menu);
+
+    if (!tokens[eMenuId]){
+        fprintf(stderr, MESSAGE_ERROR_NO_MEMORY);
+        return;
+    }
+
+    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
+
+    title = createDashesFromString(MENU_TITLE_ADD_ITEM);
+    printf("%s\n", title);
+    freeString(&title);
+
+    do {
+
+        memset(catId, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
+
+        if (strlen(catId) && !getCategoryFromId(menu, catId)){
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
+            result = false;
+        }
+
+    } while (!result);
+
+    if (strlen(catId)){
+
+        tokens[eMenuCategoryId] = copyString(catId);
+        memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
+        sprintf(message, INPUT_ITEM_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
+
+        printf("%s%s\n", INPUT_NEW_ITEM_ID, tokens[eMenuId]);
+
+        do {
+            memset(itemName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
+            result = getStringFromStdIn(itemName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+        } while (!result);
+
+        if (strlen(itemName)){
+
+            tokens[eMenuType] = copyString(itemName);
+
+            for (i = 0; i < NUM_PRICES; i++){
+
+                char temp[MAX_STRING_MEDIUM] = {0};
+                memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
+
+                switch (eMenuPrice1 + i){
+                    case eMenuPrice1:
+                        strcpy(temp, INPUT_ITEM_PRICE_SMALL);
+                        break;
+                    case eMenuPrice2:
+                        strcpy(temp, INPUT_ITEM_PRICE_MEDIUM);
+                        break;
+                    case eMenuPrice3:
+                        strcpy(temp, INPUT_ITEM_PRICE_LARGE);
+                        break;
+                }
+
+                sprintf(message, temp, CURRENCY_CHAR, MIN_ITEM_PRICE, CURRENCY_CHAR, MAX_ITEM_PRICE);
+
+                do {
+
+                    memset(itemPrices[i], 0, sizeof(char) * (PRICE_LEN + EXTRA_SPACE));
+                    result = getStringFromStdIn(itemPrices[i], PRICE_LEN, message, PRICE_LEN, true, true);
+
+                    if (strlen(itemPrices[i]) && !validateItemPrice(itemPrices[i], true))
+                        result = false;
+
+                } while (!result);
+
+                if (strlen(itemPrices[i]) == 0){
+                    priceResult = false;
+                    break;
+                }
+
+                tokens[eMenuPrice1 + i] = copyString(itemPrices[i]);
+                priceResult = true;
+
+            }
+
+            if (priceResult){
+
+                memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
+                sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
+
+                do {
+                    memset(itemDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
+                    result = getStringFromStdIn(itemDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+                } while (!result);
+
+                if (strlen(itemDesc)){
+
+                    tokens[eMenuDescription] = copyString(itemDesc);
+
+                    line = implode(delim, tokens, eMenuMax);
+
+                    if (line){
+                        populateMenu(menu, line, true, DEFAULT_SORT_ORDER);
+                        freeString(&line);
+                    }
+
+                }
+
+            }
+
+
+        }
+    }
+
+    freeDynamicStringArray(&tokens, eMenuMax);
+
 }
 
 

@@ -27,7 +27,7 @@ CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id);
 ItemTypePtr getItemFromId(BCSType *menu, const char *id);
 CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str);
 ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *category);
-bool validateItemPrice(const char* price);
+bool validateItemPrice(const char* price, bool showError);
 bool validateCategoryTokens(char **tokens, bool showError);
 bool validateMenuTokens(char **tokens, bool showError);
 bool validateCategoryToken(char **tokens, const int token, bool showError);
