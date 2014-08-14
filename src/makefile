@@ -39,7 +39,9 @@ bcs_options.o: bcs_options.c bcs_options.h
 clean:
 	@echo 'Deleting $(OBJS)'
 	$(RM) $(OBJS)
+	@echo ' '
 	@echo 'Deleting $(EXE)'
 	$(RM) $(EXE)
+	@echo ' '
 	@echo 'Clean done'
 	@echo ' '
