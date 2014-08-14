@@ -16,6 +16,8 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
 /* BCSType functions. */
+char *categoryToString(CategoryTypePtr category);
+char *itemToString(ItemTypePtr item, CategoryTypePtr parent);
 char *generateCategoryId(BCSType *menu);
 char *generateItemId(BCSType *menu);
 void freeCategories(BCSType* menu);

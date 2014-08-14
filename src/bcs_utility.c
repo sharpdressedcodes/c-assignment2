@@ -69,6 +69,73 @@ void systemFree(BCSType* menu)
 
 
 
+char *categoryToString(CategoryTypePtr category){
+
+    int len = 0;
+    char *result = null;
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    const char drink[] = {category->drinkType, 0};
+    size_t delimSize = strlen(delim);
+
+    len += strlen(category->categoryID) + delimSize;
+    len += DRINK_LEN + delimSize;
+    len += strlen(category->categoryName) + delimSize;
+    len += strlen(category->categoryDescription) + EXTRA_SPACE;
+
+    if (allocateString(&result, len)){
+        strcpy(result, category->categoryID);
+        strcat(result, delim);
+        strcat(result, drink);
+        strcat(result, delim);
+        strcat(result, category->categoryName);
+        strcat(result, delim);
+        strcat(result, category->categoryDescription);
+    }
+
+    return result;
+
+}
+
+char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
+
+    int i = 0;
+    int len = 0;
+    char *result = null;
+    const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
+    size_t delimSize = strlen(delim);
+
+    len += strlen(item->itemID) + delimSize;
+    len += strlen(parent->categoryID) + delimSize;
+    len += strlen(item->itemName) + delimSize;
+
+    for (i = 0; i < NUM_PRICES; i++){
+        len += PRICE_LEN + delimSize;
+    }
+
+    len += strlen(item->itemDescription) + EXTRA_SPACE;
+
+    if (allocateString(&result, len)){
+        strcpy(result, item->itemID);
+        strcat(result, delim);
+        strcat(result, parent->categoryID);
+        strcat(result, delim);
+        strcat(result, item->itemName);
+        strcat(result, delim);
+
+        for (i = 0; i < NUM_PRICES; i++){
+            char price[PRICE_LEN + EXTRA_SPACE] = {0};
+            sprintf(price, "%d.%02d", item->prices[i].dollars, item->prices[i].cents);
+            strcat(result, price);
+            strcat(result, delim);
+        }
+
+        strcat(result, item->itemDescription);
+
+    }
+
+    return result;
+
+}
 
 char *generateCategoryId(BCSType *menu){
 

@@ -79,8 +79,6 @@ void displaySummary(BCSType* menu, char drinkType)
 
 }
 
-
-
 /****************************************************************************
 * Menu option #2: Category Report
 * Allows the user to make a new report file for a chosen category.
@@ -420,7 +418,6 @@ void addItem(BCSType* menu)
 
 }
 
-
 /****************************************************************************
 * Menu option #6: Delete Item
 * Deletes a single item from a particular category.
@@ -517,7 +514,6 @@ void deleteItem(BCSType* menu)
 
 }
 
-
 /****************************************************************************
 * Menu option #7: Save and Exit
 * Saves all system data back to the original files. This function does not
@@ -525,4 +521,32 @@ void deleteItem(BCSType* menu)
 ****************************************************************************/
 void saveData(BCSType* menu, char* menuFile, char* submenuFile)
 {
+
+    FILE *fpMenu = fopen(menuFile, "w");
+    FILE *fpSubMenu = fopen(submenuFile, "w");
+    CategoryTypePtr category = menu->headCategory;
+    ItemTypePtr item = null;
+
+    while (category){
+
+        char *categoryString = categoryToString(category);
+        fprintf(fpMenu, "%s\n", categoryString);
+        freeString(&categoryString);
+
+        item = category->headItem;
+
+        while (item){
+
+            char *itemString = itemToString(item, category);
+            fprintf(fpSubMenu, "%s\n", itemString);
+            freeString(&itemString);
+
+            item = item->nextItem;
+        }
+        category = category->nextCategory;
+    }
+
+    fclose(fpMenu);
+    fclose(fpSubMenu);
+
 }
