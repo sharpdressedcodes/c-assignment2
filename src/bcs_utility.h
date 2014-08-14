@@ -34,6 +34,8 @@ bool validateCategoryToken(char **tokens, const int token, bool showError);
 bool validateMenuToken(char **tokens, const int token, bool showError);
 bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order);
 bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
+char *createReport(CategoryTypePtr category);
+bool createAndSaveReport(CategoryTypePtr category, const char *fileName);
 
 /* stdin functions. */
 bool getIntegerFromStdIn(int *result, const int length, const char *message,
@@ -43,6 +45,7 @@ bool getStringFromStdIn(char *result, const int length, const char *message,
 
 int getLineFromStream(char **result, FILE *stream, bool stripNewLine);
 int getFirstLineFromFile(char **result, const char *fileName);
+char *getCategoryIdFromStdIn(BCSType* menu);
 
 /* Dynamic memory functions. */
 bool allocateString(char **str, const int size);
@@ -58,6 +61,7 @@ bool stringToInteger(const char *str, int *result);
 int explode(const char *delimeter, const char *str, char ***array);
 char *implode(const char *delimeter, char **array, const int length);
 int generateRandomNumber(const int min, const int max);
+char *wordWrap(const char *str, const int limit);
 
 /* FILE functions. */
 bool fileExists(const char *fileName);

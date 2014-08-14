@@ -9,6 +9,9 @@
 #include "bcs.h"
 #include "bcs_options.h"
 #include "bcs_utility.h"
+/*
+ * valgrind -v --leak-check=full ./assignment2 ../menu.dat ../submenu.dat
+ * */
 
 /****************************************************************************
 * Menu option #1: Display Summary
@@ -77,12 +80,34 @@ void displaySummary(BCSType* menu, char drinkType)
 }
 
 
+
 /****************************************************************************
 * Menu option #2: Category Report
 * Allows the user to make a new report file for a chosen category.
 ****************************************************************************/
 void categoryReport(BCSType* menu)
 {
+
+    char *title = createDashesFromString(MENU_TITLE_REPORT);
+    char *catId = null;
+    char fileName[MAX_STRING_SMALL] = {0};
+
+    printf("%s\n", title);
+    freeString(&title);
+
+    catId = getCategoryIdFromStdIn(menu);
+
+    if (strlen(catId)){
+
+        sprintf(fileName, FORMAT_REPORT_NAME, catId);
+
+        if (createAndSaveReport(getCategoryFromId(menu, catId), fileName))
+            printf(MESSAGE_CREATED_REPORT, catId);
+
+    }
+
+    freeString(&catId);
+
 }
 
 /****************************************************************************

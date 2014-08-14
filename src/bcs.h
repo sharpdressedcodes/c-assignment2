@@ -95,6 +95,7 @@ typedef BOOLEAN bool;
 #define MESSAGE_DELETE_CATEGORY "Warning: All menu data for a menu category will be deleted if you proceed.\n"
 #define MESSAGE_DELETED_CATEGORY "Category \"%s - %s\" deleted from the system.\n"
 #define MESSAGE_DELETED_ITEM "Item \"%s - %s\" deleted from the system.\n"
+#define MESSAGE_CREATED_REPORT "File %s.report has been created.\n"
 
 /* Menu Option Titles. */
 #define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
@@ -131,8 +132,15 @@ typedef BOOLEAN bool;
 #define FORMAT_DASHED_HEADER_TOP2 "%-42s"
 #define FORMAT_DASHED_HEADER_BOTTOM "   %-5s %-25s %-5s %-5s %-5s\n   "
 
+#define FORMAT_DASHED_HEADER_REPORT "Category %s - %s - Detailed Report"
+#define TITLE_REPORT_ITEM_ID "Item ID"
+#define TITLE_REPORT_ITEM_NAME "Item Name"
+#define TITLE_REPORT_ITEM_PRICES "Prices"
+#define TITLE_REPORT_ITEM_DESCRIPTION "Description"
+
 #define FORMAT_ITEM "%8s %-25s"
 #define FORMAT_PRICE " $%u.%02u"
+#define FORMAT_REPORT_NAME "../%s.report"
 
 #define TITLE_HOT "Hot"
 #define TITLE_COLD "Cold"
@@ -159,6 +167,8 @@ typedef BOOLEAN bool;
 #define PRICE_LEN 4
 #define DOLLARS_LEN 1
 #define CENTS_LEN 2
+
+#define WORD_WRAP_LIMIT 78
 
 /* End Custom Types */
 

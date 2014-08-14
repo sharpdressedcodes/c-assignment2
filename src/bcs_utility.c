@@ -813,6 +813,117 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 
 }
 
+char *createReport(CategoryTypePtr category){
+
+    int i = 0;
+    int len = 0;
+    char *result = null;
+    char *title = null;
+    char s1[MAX_STRING_MEDIUM] = {0};
+    char s2[MAX_STRING_MEDIUM] = {0};
+    ItemTypePtr item = category->headItem;
+
+    sprintf(s1, FORMAT_DASHED_HEADER_REPORT, category->categoryID, category->categoryName);
+    sprintf(s2, "%-61s", s1);
+    title = createDashesFromString(s2);
+
+    if (!allocateString(&result, strlen(title) + EXTRA_SPACE)){
+        freeString(&title);
+        return null;
+    }
+
+    strcpy(result, title);
+    freeString(&title);
+    len = strlen(result);
+
+    while (item){
+
+        i = 0;
+
+        while (i < eMenuMax){
+
+            char temp[MAX_STRING_LARGE] = {0};
+            char *description = null;
+            int j = 0;
+
+            switch (i){
+                case eMenuId:
+
+                    sprintf(temp, "\n%-12s: %s\n", TITLE_REPORT_ITEM_ID, item->itemID);
+                    i++; /* bypass cat id*/
+                    break;
+
+                case eMenuType:
+
+                    sprintf(temp, "%-12s: %s\n", TITLE_REPORT_ITEM_NAME, item->itemName);
+                    break;
+
+                case eMenuPrice1:
+
+                    sprintf(temp, "%-12s:", TITLE_REPORT_ITEM_PRICES);
+
+                    while (j < NUM_PRICES){
+
+                        char temp2[MAX_STRING_SMALL] = {0};
+
+                        sprintf(temp2, " %c%d.%02d", CURRENCY_CHAR, item->prices[j].dollars, item->prices[j].cents);
+                        strcat(temp, temp2);
+
+                        j++;
+
+                    }
+
+                    strcat(temp, "\n");
+                    i += NUM_PRICES - 1; /* bypass rest of prices */
+
+                    break;
+
+                case eMenuDescription:
+
+                    description = wordWrap(item->itemDescription, WORD_WRAP_LIMIT);
+                    sprintf(temp, "%-12s:\n%s\n", TITLE_REPORT_ITEM_DESCRIPTION, description);
+                    freeString(&description);
+
+                    break;
+            }
+
+
+            if (!allocateString(&result, len + strlen(temp) + EXTRA_SPACE))
+                return null;
+
+            strcat(result, temp);
+            len = strlen(result);
+            i++;
+
+        }
+
+        item = item->nextItem;
+
+    }
+
+    return result;
+
+}
+
+bool createAndSaveReport(CategoryTypePtr category, const char *fileName){
+
+    bool result = false;
+    char *report = createReport(category);
+    FILE *fp = fopen(fileName, "w");
+
+    if (fp){
+        fputs(report, fp);
+        fclose(fp);
+        result = true;
+    }
+
+    freeString(&report);
+
+    return result;
+
+}
+
+
 
 /* This function will get an integer value from the user.
  * Depending on the parameters set, it can also show an error message,
@@ -1073,6 +1184,37 @@ int getFirstLineFromFile(char **result, const char *fileName){
 
 }
 
+char *getCategoryIdFromStdIn(BCSType* menu){
+
+    char catId[ID_LEN + EXTRA_SPACES] = {0};
+    char message[MAX_STRING_SMALL] = {0};
+    bool result = false;
+    CategoryTypePtr cp = null;
+
+    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
+
+    while (!result){
+
+        memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
+        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
+
+        if (strlen(catId) == 0)
+            break;
+
+        cp = getCategoryFromId(menu, catId);
+
+        if (!cp){
+
+            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
+            result = false;
+
+        }
+
+    }
+
+    return copyString(catId);
+
+}
 
 
 /* This function is used for dynamic string allocation.
@@ -1300,6 +1442,58 @@ bool isNumeric(const char *str){
 int generateRandomNumber(const int min, const int max){
 
     return min + (rand() % max);
+
+}
+
+char *wordWrap(const char *str, const int limit){
+
+    char *result = null;
+    char *s = copyString(str);
+    char **arr = null;
+    int count = 0;
+    int len = 0;
+    int i = 0;
+    const char delim[] = {SPACE_CHAR, 0};
+
+    if (!s)
+        return null;
+
+    if (strlen(s) <= limit - 1)
+        return s;
+
+    count = explode(delim, s, &arr);
+    freeString(&s);
+
+    if (!arr)
+        return null;
+
+    if (!allocateString(&result, strlen(str) + EXTRA_SPACE)){
+        freeDynamicStringArray(&arr, count);
+        return null;
+    }
+
+    for (i = 0; i < count; i++){
+
+        int potentialLength = strlen(arr[i]) + (i == count - 1 ? 0 : 1);
+
+        if (len + potentialLength >= limit){
+            strcat(result, "\n");
+            len = 0;
+        } else if (i > 0) {
+            strcat(result, delim);
+        }
+
+        len += potentialLength;
+        if (i == 0)
+            strcpy(result, arr[i]);
+        else
+            strcat(result, arr[i]);
+
+    }
+
+    freeDynamicStringArray(&arr, count);
+
+    return result;
 
 }
 
