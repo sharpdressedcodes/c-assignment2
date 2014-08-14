@@ -107,11 +107,7 @@ char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
     len += strlen(item->itemID) + delimSize;
     len += strlen(parent->categoryID) + delimSize;
     len += strlen(item->itemName) + delimSize;
-
-    for (i = 0; i < NUM_PRICES; i++){
-        len += PRICE_LEN + delimSize;
-    }
-
+    len += (PRICE_LEN + delimSize) * NUM_PRICES;
     len += strlen(item->itemDescription) + EXTRA_SPACE;
 
     if (allocateString(&result, len)){
