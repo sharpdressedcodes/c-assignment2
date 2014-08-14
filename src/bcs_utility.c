@@ -74,8 +74,10 @@ char *categoryToString(CategoryTypePtr category){
     int len = 0;
     char *result = null;
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
-    const char drink[] = {category->drinkType, 0};
+    char drink[DRINK_LEN + EXTRA_SPACE] = {0};
     size_t delimSize = strlen(delim);
+
+    drink[0] = category->drinkType;
 
     len += strlen(category->categoryID) + delimSize;
     len += DRINK_LEN + delimSize;
