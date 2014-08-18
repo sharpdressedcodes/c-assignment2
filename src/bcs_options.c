@@ -115,12 +115,10 @@ void categoryReport(BCSType* menu)
 void addCategory(BCSType* menu)
 {
 
-    bool result = false;
-    char catName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
-    char catDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
-    char catType[EXTRA_SPACES] = {0};
+    char *catName = null;
+    char *catType = null;
+    char *catDesc = null;
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
-    char message[MAX_STRING_LARGE] = {0};
     char *line = null;
     char *title = createDashesFromString(MENU_TITLE_ADD_CATEGORY);
     char **tokens = calloc(eCategoryMax, sizeof(char*));
@@ -143,48 +141,23 @@ void addCategory(BCSType* menu)
         return;
     }
 
-    sprintf(message, INPUT_CATEGORY_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
     printf("%s\n%s%s\n", title, INPUT_NEW_CATEGORY_ID, tokens[eCategoryId]);
     freeString(&title);
 
-    while (!result){
-        memset(catName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(catName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
-    }
+    catName = getCategoryNameFromStdIn(menu);
 
     if (strlen(catName)){
 
-        tokens[eCategoryName] = copyString(catName);
-        result = false;
-
-        while (!result){
-
-            catType[0] = 0;
-            result = getStringFromStdIn(catType, DRINK_LEN, INPUT_CATEGORY_TYPE, DRINK_LEN, true, true);
-
-            if (strlen(catType)){
-
-                freeString(&tokens[eCategoryType]);
-                tokens[eCategoryType] = copyString(catType);
-                result = validateCategoryToken(tokens, eCategoryType, true);
-
-            }
-
-        }
+        catType = getCategoryTypeFromStdIn(menu);
 
         if (strlen(catType)){
 
-            memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
-            sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
-            result = false;
-
-            while (!result){
-                memset(catDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
-                result = getStringFromStdIn(catDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
-            }
+            catDesc = getCategoryDescFromStdIn(menu);
 
             if (strlen(catDesc)){
 
+                tokens[eCategoryName] = copyString(catName);
+                tokens[eCategoryType] = copyString(catType);
                 tokens[eCategoryDescription] = copyString(catDesc);
 
                 line = implode(delim, tokens, eCategoryMax);
@@ -200,6 +173,7 @@ void addCategory(BCSType* menu)
 
     }
 
+    freeStrings(3, &catName, &catType, &catDesc);
     freeDynamicStringArray(&tokens, eCategoryMax);
 
 }
@@ -212,66 +186,48 @@ void deleteCategory(BCSType* menu)
 {
 
     char *title = createDashesFromString(MENU_TITLE_DELETE_CATEGORY);
-    char catId[ID_LEN + EXTRA_SPACES] = {0};
-    char message[MAX_STRING_SMALL] = {0};
-    bool result = false;
-    CategoryTypePtr cp = null;
+    char *catId = null;
 
     printf("%s\n%s", title, MESSAGE_DELETE_CATEGORY);
     freeString(&title);
 
-    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
+    catId = getCategoryIdFromStdIn(menu);
 
-    while (!result){
+    if (strlen(catId)){
 
-        memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
+        CategoryTypePtr lastCategory = menu->headCategory;
 
-        if (strlen(catId) == 0)
-            break;
+        if (strcmp(lastCategory->categoryID, catId) == 0){
 
-        cp = getCategoryFromId(menu, catId);
-
-        if (!cp){
-
-            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
-            result = false;
+            menu->headCategory = lastCategory->nextCategory;
+            printf(MESSAGE_DELETED_CATEGORY, lastCategory->categoryID, lastCategory->categoryName);
+            freeCategory(lastCategory);
 
         } else {
 
-            CategoryTypePtr lastCategory = menu->headCategory;
+            CategoryTypePtr currentCategory = lastCategory->nextCategory;
 
-            if (strcmp(lastCategory->categoryID, cp->categoryID) == 0){
+            while (currentCategory){
 
-                menu->headCategory = lastCategory->nextCategory;
-                printf(MESSAGE_DELETED_CATEGORY, lastCategory->categoryID, lastCategory->categoryName);
-                freeCategory(lastCategory);
-
-            } else {
-
-                CategoryTypePtr currentCategory = lastCategory->nextCategory;
-
-                while (currentCategory){
-
-                    if (strcmp(currentCategory->categoryID, cp->categoryID) == 0){
-                        lastCategory->nextCategory = currentCategory->nextCategory;
-                        printf(MESSAGE_DELETED_CATEGORY, currentCategory->categoryID, currentCategory->categoryName);
-                        freeCategory(currentCategory);
-                        break;
-                    }
-
-                    lastCategory = currentCategory;
-                    currentCategory = currentCategory->nextCategory;
-
+                if (strcmp(currentCategory->categoryID, catId) == 0){
+                    lastCategory->nextCategory = currentCategory->nextCategory;
+                    printf(MESSAGE_DELETED_CATEGORY, currentCategory->categoryID, currentCategory->categoryName);
+                    freeCategory(currentCategory);
+                    break;
                 }
+
+                lastCategory = currentCategory;
+                currentCategory = currentCategory->nextCategory;
 
             }
 
-            menu->numCategories--;
-
         }
 
+        menu->numCategories--;
+
     }
+
+    freeString(&catId);
 
 }
 
@@ -283,18 +239,16 @@ void deleteCategory(BCSType* menu)
 void addItem(BCSType* menu)
 {
 
-    bool result = false;
+    int i = 0;
     bool priceResult = false;
-    char catId[ID_LEN + EXTRA_SPACE] = {0};
-    char itemName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
-    char itemDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
-    char itemPrices[NUM_PRICES][PRICE_LEN + EXTRA_SPACE] = {{0}};
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
-    char message[MAX_STRING_LARGE] = {0};
+    char **tokens = calloc(eMenuMax, sizeof(char*));
     char *line = null;
     char *title = null;
-    char **tokens = calloc(eMenuMax, sizeof(char*));
-    int i = 0;
+    char *catId = null;
+    char *itemName = null;
+    char *itemDesc = null;
+    char *itemPrices[NUM_PRICES] = {null};
 
     if (!tokens){
         fprintf(stderr, MESSAGE_ERROR_NO_MEMORY);
@@ -311,69 +265,25 @@ void addItem(BCSType* menu)
         return;
     }
 
-    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
-
     title = createDashesFromString(MENU_TITLE_ADD_ITEM);
     printf("%s\n", title);
     freeString(&title);
 
-    do {
-
-        memset(catId, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
-
-        if (strlen(catId) && !getCategoryFromId(menu, catId)){
-            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
-            result = false;
-        }
-
-    } while (!result);
+    catId = getCategoryIdFromStdIn(menu);
 
     if (strlen(catId)){
 
         tokens[eMenuCategoryId] = copyString(catId);
-        memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
-        sprintf(message, INPUT_ITEM_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
-
         printf("%s%s\n", INPUT_NEW_ITEM_ID, tokens[eMenuId]);
 
-        do {
-            memset(itemName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
-            result = getStringFromStdIn(itemName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
-        } while (!result);
+        itemName = getItemNameFromStdIn(menu);
 
         if (strlen(itemName)){
 
             tokens[eMenuType] = copyString(itemName);
 
             for (i = 0; i < NUM_PRICES; i++){
-
-                char temp[MAX_STRING_MEDIUM] = {0};
-                memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
-
-                switch (eMenuPrice1 + i){
-                    case eMenuPrice1:
-                        strcpy(temp, INPUT_ITEM_PRICE_SMALL);
-                        break;
-                    case eMenuPrice2:
-                        strcpy(temp, INPUT_ITEM_PRICE_MEDIUM);
-                        break;
-                    case eMenuPrice3:
-                        strcpy(temp, INPUT_ITEM_PRICE_LARGE);
-                        break;
-                }
-
-                sprintf(message, temp, CURRENCY_CHAR, MIN_ITEM_PRICE, CURRENCY_CHAR, MAX_ITEM_PRICE);
-
-                do {
-
-                    memset(itemPrices[i], 0, sizeof(char) * (PRICE_LEN + EXTRA_SPACE));
-                    result = getStringFromStdIn(itemPrices[i], PRICE_LEN, message, PRICE_LEN, true, true);
-
-                    if (strlen(itemPrices[i]) && !validateItemPrice(itemPrices[i], true))
-                        result = false;
-
-                } while (!result);
+                itemPrices[i] = getItemPriceFromStdIn(menu, i);
 
                 if (strlen(itemPrices[i]) == 0){
                     priceResult = false;
@@ -382,18 +292,11 @@ void addItem(BCSType* menu)
 
                 tokens[eMenuPrice1 + i] = copyString(itemPrices[i]);
                 priceResult = true;
-
             }
 
             if (priceResult){
 
-                memset(message, 0, sizeof(char) * MAX_STRING_LARGE);
-                sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
-
-                do {
-                    memset(itemDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
-                    result = getStringFromStdIn(itemDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
-                } while (!result);
+                itemDesc = getItemDescFromStdIn(menu);
 
                 if (strlen(itemDesc)){
 
@@ -410,10 +313,12 @@ void addItem(BCSType* menu)
 
             }
 
-
         }
+
     }
 
+    freeStrings(3, &catId, &itemName, &itemDesc);
+    freeStringArray(itemPrices, NUM_PRICES);
     freeDynamicStringArray(&tokens, eMenuMax);
 
 }
@@ -426,61 +331,24 @@ void deleteItem(BCSType* menu)
 {
 
     char *title = createDashesFromString(MENU_TITLE_DELETE_ITEM);
-    char catId[ID_LEN + EXTRA_SPACES] = {0};
-    char itemId[ID_LEN + EXTRA_SPACES] = {0};
-    char message[MAX_STRING_SMALL] = {0};
-    bool result = false;
+    char *catId = null;
+    char *itemId = null;
     CategoryTypePtr category = null;
     ItemTypePtr item = null;
 
     printf("%s\n", title);
     freeString(&title);
 
-    sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
+    catId = getCategoryIdFromStdIn(menu);
 
-    while (!result){
+    if (strlen(catId)){
 
-        memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, message, MIN_STRING_NONE, true, true);
+        itemId = getItemIdFromStdIn(menu);
 
-        if (strlen(catId) == 0)
-            break;
+        if (strlen(itemId)){
 
-        category = getCategoryFromId(menu, catId);
-
-        if (!category){
-
-            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
-            result = false;
-
-        }
-
-    }
-
-    if (category){
-
-        memset(message, 0, sizeof(char) * MAX_STRING_SMALL);
-        sprintf(message, INPUT_ITEM_ID, ID_LEN);
-        result = false;
-
-        while (!result){
-
-            memset(itemId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-            result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true, true);
-
-            if (strlen(itemId) == 0)
-                break;
-
+            category = getCategoryFromId(menu, catId);
             item = getItemFromId(menu, itemId);
-
-            if (!item){
-                fprintf(stderr, MESSAGE_ERROR_MENU_NOT_EXIST, itemId);
-                result = false;
-            }
-
-        }
-
-        if (item){
 
             if (strcmp(category->headItem->itemID, itemId) == 0){
 
@@ -511,6 +379,8 @@ void deleteItem(BCSType* menu)
         }
 
     }
+
+    freeStrings(2, &catId, &itemId);
 
 }
 

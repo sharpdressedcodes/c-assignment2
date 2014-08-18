@@ -85,6 +85,7 @@ typedef BOOLEAN bool;
 #define MESSAGE_ERROR_LOAD_DATA_FAIL "Error: Can't load data from file %s and %s\n"
 #define MESSAGE_ERROR_INVALID_TOKEN "Error: %s token %s is invalid (index: %d)!\n"
 #define MESSAGE_ERROR_INVALID_PRICE "Error: price is invalid!\n"
+#define MESSAGE_ERROR_INVALID_CATEGORY_TYPE "Error: Invalid Category Type.\n"
 #define MESSAGE_ERROR_CATEGORY_EXIST "Error: Category %s already exists!\n"
 #define MESSAGE_ERROR_CATEGORY_NOT_EXIST "Error: Category %s doesn't exist!\n"
 #define MESSAGE_ERROR_MENU_EXIST "Error: Item %s already exists!\n"

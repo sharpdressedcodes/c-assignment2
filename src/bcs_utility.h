@@ -32,6 +32,7 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 bool validateItemPrice(const char* price, bool showError);
 bool validateCategoryTokens(char **tokens, bool showError);
 bool validateMenuTokens(char **tokens, bool showError);
+bool validateCategoryType(const char *type, bool showError);
 bool validateCategoryToken(char **tokens, const int token, bool showError);
 bool validateMenuToken(char **tokens, const int token, bool showError);
 bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order);
@@ -48,6 +49,13 @@ bool getStringFromStdIn(char *result, const int length, const char *message,
 int getLineFromStream(char **result, FILE *stream, bool stripNewLine);
 int getFirstLineFromFile(char **result, const char *fileName);
 char *getCategoryIdFromStdIn(BCSType* menu);
+char *getCategoryNameFromStdIn(BCSType* menu);
+char *getCategoryTypeFromStdIn(BCSType* menu);
+char *getCategoryDescFromStdIn(BCSType* menu);
+char *getItemIdFromStdIn(BCSType *menu);
+char *getItemNameFromStdIn(BCSType *menu);
+char *getItemPriceFromStdIn(BCSType *menu, int priceIndex);
+char *getItemDescFromStdIn(BCSType *menu);
 
 /* Dynamic memory functions. */
 bool allocateString(char **str, const int size);

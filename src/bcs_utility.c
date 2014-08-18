@@ -562,6 +562,19 @@ bool validateMenuTokens(char **tokens, bool showError){
 
 }
 
+bool validateCategoryType(const char *type, bool showError){
+
+    const size_t len = strlen(type);
+    const char c = toupper(type[0]);
+    const bool result = (len == DRINK_LEN && (c == eDrinkHot || c == eDrinkCold));
+
+    if (!result && showError)
+        fputs(MESSAGE_ERROR_INVALID_CATEGORY_TYPE, stderr);
+
+    return result;
+
+}
+
 bool validateCategoryToken(char **tokens, const int token, bool showError){
 
     bool result = false;
@@ -576,7 +589,7 @@ bool validateCategoryToken(char **tokens, const int token, bool showError){
 
         case eCategoryType:
 
-            result = (len == DRINK_LEN && (toupper(s[0]) == eDrinkHot || toupper(s[0]) == eDrinkCold));
+            result = validateCategoryType(s, false);
             break;
 
         case eCategoryName:
@@ -1254,7 +1267,6 @@ char *getCategoryIdFromStdIn(BCSType* menu){
     char catId[ID_LEN + EXTRA_SPACES] = {0};
     char message[MAX_STRING_SMALL] = {0};
     bool result = false;
-    CategoryTypePtr cp = null;
 
     sprintf(message, INPUT_CATEGORY_ID, ID_LEN);
 
@@ -1263,12 +1275,7 @@ char *getCategoryIdFromStdIn(BCSType* menu){
         memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
         result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
 
-        if (strlen(catId) == 0)
-            break;
-
-        cp = getCategoryFromId(menu, catId);
-
-        if (!cp){
+        if (strlen(catId) && !getCategoryFromId(menu, catId)){
 
             fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, catId);
             result = false;
@@ -1280,6 +1287,158 @@ char *getCategoryIdFromStdIn(BCSType* menu){
     return copyString(catId);
 
 }
+
+char *getCategoryNameFromStdIn(BCSType* menu){
+
+    bool result = false;
+    char catName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
+    char message[MAX_STRING_LARGE] = {0};
+
+    sprintf(message, INPUT_CATEGORY_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
+
+    while (!result){
+        memset(catName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(catName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+    }
+
+    return copyString(catName);
+
+}
+
+char *getCategoryTypeFromStdIn(BCSType* menu){
+
+    bool result = false;
+    char catType[EXTRA_SPACES] = {0};
+
+    while (!result){
+
+        catType[0] = 0;
+        result = getStringFromStdIn(catType, DRINK_LEN, INPUT_CATEGORY_TYPE, DRINK_LEN, true, true);
+
+        if (strlen(catType))
+            result = validateCategoryType(catType, true);
+
+    }
+
+    return copyString(catType);
+
+}
+
+char *getCategoryDescFromStdIn(BCSType* menu){
+
+    bool result = false;
+    char catDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
+    char message[MAX_STRING_LARGE] = {0};
+
+    sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
+
+    while (!result){
+        memset(catDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(catDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+    }
+
+    return copyString(catDesc);
+
+}
+
+char *getItemIdFromStdIn(BCSType *menu){
+
+    char itemId[ID_LEN + EXTRA_SPACES] = {0};
+    char message[MAX_STRING_SMALL] = {0};
+    bool result = false;
+
+    sprintf(message, INPUT_ITEM_ID, ID_LEN);
+
+    while (!result){
+
+        memset(itemId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
+        result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true, true);
+
+        if (strlen(itemId) && !getItemFromId(menu, itemId)){
+            fprintf(stderr, MESSAGE_ERROR_MENU_NOT_EXIST, itemId);
+            result = false;
+        }
+
+    }
+
+    return copyString(itemId);
+
+}
+
+char *getItemNameFromStdIn(BCSType *menu){
+
+    bool result = false;
+    char itemName[MAX_NAME_LEN + EXTRA_SPACE] = {0};
+    char message[MAX_STRING_LARGE] = {0};
+
+    sprintf(message, INPUT_ITEM_NAME, MIN_NAME_LEN, MAX_NAME_LEN);
+
+    do {
+
+        memset(itemName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(itemName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+
+    } while (!result);
+
+    return copyString(itemName);
+
+}
+
+char *getItemPriceFromStdIn(BCSType *menu, int priceIndex){
+
+    bool result = false;
+    char price[PRICE_LEN + EXTRA_SPACE] = {0};
+    char message[MAX_STRING_LARGE] = {0};
+    char temp[MAX_STRING_MEDIUM] = {0};
+
+    switch (eMenuPrice1 + priceIndex){
+        case eMenuPrice1:
+            strcpy(temp, INPUT_ITEM_PRICE_SMALL);
+            break;
+        case eMenuPrice2:
+            strcpy(temp, INPUT_ITEM_PRICE_MEDIUM);
+            break;
+        case eMenuPrice3:
+            strcpy(temp, INPUT_ITEM_PRICE_LARGE);
+            break;
+    }
+
+    sprintf(message, temp, CURRENCY_CHAR, MIN_ITEM_PRICE, CURRENCY_CHAR, MAX_ITEM_PRICE);
+
+    do {
+
+        memset(price, 0, sizeof(char) * (PRICE_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(price, PRICE_LEN, message, PRICE_LEN, true, true);
+
+        if (strlen(price) && !validateItemPrice(price, true))
+            result = false;
+
+    } while (!result);
+
+    return copyString(price);
+
+}
+
+char *getItemDescFromStdIn(BCSType *menu){
+
+    bool result = false;
+    char itemDesc[MAX_DESC_LEN + EXTRA_SPACE] = {0};
+    char message[MAX_STRING_LARGE] = {0};
+
+    sprintf(message, INPUT_DESCRIPTION, MIN_DESC_LEN, MAX_DESC_LEN);
+
+    do {
+
+        memset(itemDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
+        result = getStringFromStdIn(itemDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+
+    } while (!result);
+
+    return copyString(itemDesc);
+
+}
+
+
 
 
 /* This function is used for dynamic string allocation.
