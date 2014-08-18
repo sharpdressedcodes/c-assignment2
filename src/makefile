@@ -24,7 +24,7 @@ bcs.o: bcs.c bcs.h
 	@echo 'Successfully compiled bcs.o'
 	@echo ' '
 	
-bcs_utiity.o: bcs_utility.c bcs_utility.h
+bcs_utility.o: bcs_utility.c bcs_utility.h
 	@echo 'Compiling bcs_utility.o'
 	$(CC) -c $(FLAGS) bcs_utility.c
 	@echo 'Successfully compiled bcs_utility.o'
