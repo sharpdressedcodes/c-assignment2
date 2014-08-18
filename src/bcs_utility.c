@@ -1001,6 +1001,34 @@ bool createAndSaveReport(CategoryTypePtr category, const char *fileName){
 
 }
 
+void eachItem(CategoryTypePtr category, void (*fp)(ItemTypePtr item)){
+
+    ItemTypePtr ptr = category->headItem;
+
+    while (ptr){
+        (*fp)(ptr);
+        ptr = ptr->nextItem;
+    }
+
+}
+
+void displayItem(ItemTypePtr ip){
+
+    int i = 0;
+    char item[MAX_STRING_MEDIUM] = {0};
+
+    sprintf(item, FORMAT_ITEM, ip->itemID, ip->itemName);
+
+    for (i = 0; i < NUM_PRICES; i++){
+        char price[MAX_STRING_SMALL] = {0};
+        sprintf(price, FORMAT_PRICE, ip->prices[i].dollars, ip->prices[i].cents);
+        strcat(item, price);
+    }
+
+    printf("%s\n", item);
+
+}
+
 
 
 /* This function will get an integer value from the user.
@@ -1856,5 +1884,53 @@ menuoption_t *getMenuOptionByTitle(const char *title){
 
     /* Return the address of the structure. */
     return &(*ptr);
+
+}
+
+/* This function creates the menu statically, and keeps returning same menu */
+menuoption_t *getMenuOptions(){
+
+    static menuoption_t options[] = {
+        {
+            eMethodDisplayHot,
+            MENU_TITLE_SUMMARY_HOT
+        },
+        {
+            eMethodDisplayCold,
+            MENU_TITLE_SUMMARY_COLD
+        },
+        {
+            eMethodReport,
+            MENU_TITLE_REPORT
+        },
+        {
+            eMethodAddCategory,
+            MENU_TITLE_ADD_CATEGORY
+        },
+        {
+            eMethodDeleteCategory,
+            MENU_TITLE_DELETE_CATEGORY
+        },
+        {
+            eMethodAddItem,
+            MENU_TITLE_ADD_ITEM
+        },
+        {
+            eMethodDeleteItem,
+            MENU_TITLE_DELETE_ITEM
+        },
+        {
+            eMethodSaveData,
+            MENU_TITLE_EXIT
+        },
+        {
+            eMethodExitApp,
+            MENU_TITLE_ABORT
+        },
+        {MAX_MENU_OPTION + 1, null}
+    };
+
+
+    return options;
 
 }

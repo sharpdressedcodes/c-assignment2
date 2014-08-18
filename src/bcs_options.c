@@ -22,7 +22,6 @@ void displaySummary(BCSType* menu, char drinkType)
 {
 
     CategoryTypePtr cp = menu->headCategory;
-    ItemTypePtr ip = null;
     char title[MAX_STRING_MEDIUM] = {0};
     char *titleDashes = null;
     char *subtitleDashes = null;
@@ -47,27 +46,7 @@ void displaySummary(BCSType* menu, char drinkType)
                 printf("%s\n", subtitleDashes);
                 freeString(&subtitleDashes);
 
-                ip = cp->headItem;
-
-                while (ip){
-
-                    int i = 0;
-                    char item[MAX_STRING_MEDIUM] = {0};
-
-                    sprintf(item, FORMAT_ITEM, ip->itemID, ip->itemName);
-
-                    for (i = 0; i < NUM_PRICES; i++){
-                        char price[MAX_STRING_SMALL] = {0};
-                        sprintf(price, FORMAT_PRICE, ip->prices[i].dollars, ip->prices[i].cents);
-                        strcat(item, price);
-                    }
-
-                    printf("%s\n", item);
-
-                    ip = ip->nextItem;
-
-                }
-
+                eachItem(cp, displayItem);
                 printf("\n");
 
             }

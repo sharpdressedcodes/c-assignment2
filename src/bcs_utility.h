@@ -39,6 +39,10 @@ bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder ord
 bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
 char *createReport(CategoryTypePtr category);
 bool createAndSaveReport(CategoryTypePtr category, const char *fileName);
+void eachItem(CategoryTypePtr category, void (*fp)(ItemTypePtr item));
+void displayItem(ItemTypePtr ip);
+
+
 
 /* stdin functions. */
 bool getIntegerFromStdIn(int *result, const int length, const char *message,
@@ -83,4 +87,5 @@ char *createDashes(const int length);
 char *createDashesFromString(const char *str);
 menuoption_t *getMenuOptionByIndex(const int index);
 menuoption_t *getMenuOptionByTitle(const char *title);
+menuoption_t *getMenuOptions();
 #endif

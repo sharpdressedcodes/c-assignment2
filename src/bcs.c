@@ -13,7 +13,6 @@
 int main(int argc, char* argv[]){
 
     BCSType menu;
-    /*int i = 0;*/
     char menuString[MAX_STRING_LARGE] = {0};
     bool abort = false;
     int option = 0;
@@ -86,61 +85,36 @@ int main(int argc, char* argv[]){
                 if (getIntegerFromStdIn(&option, MIN_STRING, menuString,
                         MIN_MENU_OPTION, MAX_MENU_OPTION, true, false)) {
 
-                    /* Lookup the option by it's index */
-                    ptr = getMenuOptionByIndex(option);
-
                     switch (option){
-                    case 1:
-                        ptr->method(&menu, eDrinkHot);
-                        break;
-                    case 2:
-                        ptr->method(&menu, eDrinkCold);
-                        break;
-                    case MAX_MENU_OPTION - 1:
-                        ptr->method(&menu, menuFileName, subMenuFileName);
-                        abort = true;
-                        break;
-                    case MAX_MENU_OPTION:
-                        abort = true;
-                        break;
-                    default:
-                        ptr->method(&menu);
-                        break;
-
+                        case eMethodDisplayHot:
+                            displaySummary(&menu, eDrinkHot);
+                            break;
+                        case eMethodDisplayCold:
+                            displaySummary(&menu, eDrinkCold);
+                            break;
+                        case eMethodReport:
+                            categoryReport(&menu);
+                            break;
+                        case eMethodAddCategory:
+                            addCategory(&menu);
+                            break;
+                        case eMethodDeleteCategory:
+                            deleteCategory(&menu);
+                            break;
+                        case eMethodAddItem:
+                            addItem(&menu);
+                            break;
+                        case eMethodDeleteItem:
+                            deleteItem(&menu);
+                            break;
+                        case eMethodSaveData:
+                            saveData(&menu, menuFileName, subMenuFileName);
+                            abort = true;
+                            break;
+                        case eMethodExitApp:
+                            abort = true;
+                            break;
                     }
-
-                    /* Call the function pointer. */
-                    /*ptr->method(strcmp(ptr->str, MENU_TITLE_EXIT) == 0 ? (int*)&abort : optionStats);
-
-                    switch (option){
-
-                    case 0:
-                        ptr->method(menu, HOT);
-                    break;
-                    case 1:
-                        ptr->method(menu, COLD);
-                        break;
-                    case MAX_MENU_OPTION - 1:
-                        ptr->method(menu, menuFileName, subMenuFileName);
-                        abort = true;
-                        break;
-                    case MAX_MENU_OPTION:
-                        abort = true;
-                        break;
-                    default:
-                        ptr->method(menu);
-
-                    }
-
-                    displaySummary(BCSType* menu, char drinkType)
-void categoryReport(BCSType* menu);
-void addCategory(BCSType* menu);
-void deleteCategory(BCSType* menu);
-void addItem(BCSType* menu);
-void deleteItem(BCSType* menu);
-void saveData(BCSType* menu, char* menuFile, char* submenuFile);
-
-                    */
 
                 }
 
@@ -156,94 +130,5 @@ void saveData(BCSType* menu, char* menuFile, char* submenuFile);
     }
 
     return result;
-
-}
-
-/* This function is used to break the main menu option loop by modifying
- * the abort parameter.
- *
- * Requirement  8 - Exit
- * */
-void exitApplication(int *abort){
-
-    /* Set the abort flag to true. This in turn will break the main menu loop. */
-    *abort = true;
-
-}
-
-/* This function creates the menu statically, and keeps returning same menu */
-menuoption_t *getMenuOptions(){
-
-    /*#define MENU_TITLE_SUMMARY_HOT "Hot Drinks Summary"
-#define MENU_TITLE_SUMMARY_COLD "Cold Drinks Summary"
-#define MENU_TITLE_REPORT "Details Menu Report"
-#define MENU_TITLE_ADD_CATEGORY "Add Menu Category"
-#define MENU_TITLE_DELETE_CATEGORY "Delete Menu Category"
-#define MENU_TITLE_ADD_ITEM "Add Menu Item"
-#define MENU_TITLE_DELETE_ITEM "Delete Menu Item"
-#define MENU_TITLE_EXIT "Save & Exit"
-#define MENU_TITLE_ABORT "Abort"
-
-displaySummary(BCSType* menu, char drinkType)
-void categoryReport(BCSType* menu);
-void addCategory(BCSType* menu);
-void deleteCategory(BCSType* menu);
-void addItem(BCSType* menu);
-void deleteItem(BCSType* menu);
-void saveData(BCSType* menu, char* menuFile, char* submenuFile);
-
-*/
-
-    static menuoption_t options[] = {
-        {
-            MIN_MENU_OPTION,
-            MENU_TITLE_SUMMARY_HOT,
-            &displaySummary
-        },
-        {
-            MIN_MENU_OPTION + 1,
-            MENU_TITLE_SUMMARY_COLD,
-            &displaySummary
-        },
-        {
-            MIN_MENU_OPTION + 2,
-            MENU_TITLE_REPORT,
-            &categoryReport
-        },
-        {
-            MIN_MENU_OPTION + 3,
-            MENU_TITLE_ADD_CATEGORY,
-            &addCategory
-        },
-        {
-            MIN_MENU_OPTION + 4,
-            MENU_TITLE_DELETE_CATEGORY,
-            &deleteCategory
-        },
-        {
-            MIN_MENU_OPTION + 5,
-            MENU_TITLE_ADD_ITEM,
-            &addItem
-        },
-        {
-            MIN_MENU_OPTION + 6,
-            MENU_TITLE_DELETE_ITEM,
-            &deleteItem
-        },
-        {
-            MIN_MENU_OPTION + 7,
-            MENU_TITLE_EXIT,
-            &saveData
-        },
-        {
-            MIN_MENU_OPTION + 8,
-            MENU_TITLE_ABORT,
-            &exitApplication
-        },
-        {MAX_MENU_OPTION + 1, null, null}
-    };
-
-
-    return options;
 
 }

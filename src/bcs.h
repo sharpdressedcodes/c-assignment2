@@ -220,27 +220,13 @@ typedef struct bcs
 
 /* This structure defines the main menu options. */
 typedef struct {
-
     /* index is the number shown to the user.
      * The user will select this number. */
     int index;
-
     /* str is the menu title shown to the user.
      * This is also used when retrieving an
      * element from the array. */
     const char* str;
-
-    /* Track statistics for this method?
-     * This is used in Session Summary. */
-    /*bool tracked;*/
-
-    /* This pointer points to the method that should be invoked when the user
-     * selects this menu option. This effectively removes the need for a
-     * switch statement  */
-    /*void (*method)(int*);*/
-    void (*method)(BCSType* menu, ...);
-    /*void (*method)(...);*/
-
 } menuoption_t;
 
 typedef enum {
@@ -278,7 +264,16 @@ typedef enum {
     eSortOrderDescending
 } SortOrder;
 
-void exitApplication(int *abort);
-menuoption_t *getMenuOptions();
+typedef enum {
+    eMethodDisplayHot = MIN_MENU_OPTION,
+    eMethodDisplayCold,
+    eMethodReport,
+    eMethodAddCategory,
+    eMethodDeleteCategory,
+    eMethodAddItem,
+    eMethodDeleteItem,
+    eMethodSaveData,
+    eMethodExitApp
+} Methods;
 
 #endif
