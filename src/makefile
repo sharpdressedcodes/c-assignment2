@@ -1,8 +1,8 @@
 #/****************************************************************************
 #* COSC2138/CPT220 - Programming Principles 2A
 #* Study Period  2  2014 Assignment #2 - Brazilian Coffee Shop system
-#* Full Name        : EDIT HERE
-#* Student Number   : EDIT HERE
+#* Full Name        : Greg Kappatos
+#* Student Number   : s3460969
 #* Start up code provided by the CTEACH team
 #****************************************************************************/
 
@@ -10,7 +10,7 @@ RM		= rm -f
 CC 		= gcc
 FLAGS 	= -ansi -Wall -pedantic
 OBJS 	= bcs.o bcs_utility.o bcs_options.o
-EXE		= assignment2
+EXE		= bcs
 
 $(EXE): $(OBJS)
 	@echo 'Building $(EXE)'

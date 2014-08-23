@@ -1,8 +1,8 @@
 /****************************************************************************
 * COSC2138/CPT220 - Programming Principles 2A
 * Study Period  2  2014 Assignment #2 - Brazilian Coffee Shop system
-* Full Name        : EDIT HERE
-* Student Number   : EDIT HERE
+* Full Name        : Greg Kappatos
+* Student Number   : s3460969
 * Start up code provided by the CTEACH team
 ****************************************************************************/
 
@@ -33,8 +33,17 @@ void readRestOfLine()
 void systemInit(BCSType* menu)
 {
 
+#ifdef BONUS_2
+
+    menu->head = null;
+    menu->nodeCount = 0;
+
+#else
+
     menu->headCategory = null;
     menu->numCategories = 0;
+
+#endif
 
     srand(time(null));
 
@@ -54,6 +63,7 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile)
         result = (int)loadDataFromFile(menu, submenuFile, true);
 
     return result;
+
 }
 
 /****************************************************************************
@@ -68,7 +78,13 @@ void systemFree(BCSType* menu)
 }
 
 
+/****************************************************************************
+ Custom Methods
+****************************************************************************/
 
+/* Copy all category information (excluding items) into a
+ * delimited string.
+ * */
 char *categoryToString(CategoryTypePtr category){
 
     int len = 0;
@@ -79,6 +95,7 @@ char *categoryToString(CategoryTypePtr category){
 
     drink[0] = category->drinkType;
 
+    /* Calculate correct length. */
     len += strlen(category->categoryID) + delimSize;
     len += DRINK_LEN + delimSize;
     len += strlen(category->categoryName) + delimSize;
@@ -98,6 +115,8 @@ char *categoryToString(CategoryTypePtr category){
 
 }
 
+/* Copy all item information into a delimited string.
+ * */
 char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
 
     int i = 0;
@@ -106,6 +125,7 @@ char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
     size_t delimSize = strlen(delim);
 
+    /* Calculate correct length. */
     len += strlen(item->itemID) + delimSize;
     len += strlen(parent->categoryID) + delimSize;
     len += strlen(item->itemName) + delimSize;
@@ -113,6 +133,7 @@ char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
     len += strlen(item->itemDescription) + EXTRA_SPACE;
 
     if (allocateString(&result, len)){
+
         strcpy(result, item->itemID);
         strcat(result, delim);
         strcat(result, parent->categoryID);
@@ -120,11 +141,21 @@ char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
         strcat(result, item->itemName);
         strcat(result, delim);
 
+        /* Get all prices. */
         for (i = 0; i < NUM_PRICES; i++){
+
             char price[PRICE_LEN + EXTRA_SPACE] = {0};
-            sprintf(price, "%d.%02d", item->prices[i].dollars, item->prices[i].cents);
+
+            sprintf(
+                price,
+                "%d%c%02d",
+                item->prices[i].dollars,
+                PRICE_SEPARATOR_CHAR,
+                item->prices[i].cents
+            );
             strcat(result, price);
             strcat(result, delim);
+
         }
 
         strcat(result, item->itemDescription);
@@ -135,6 +166,8 @@ char *itemToString(ItemTypePtr item, CategoryTypePtr parent){
 
 }
 
+/* Generates a new random category id.
+ * */
 char *generateCategoryId(BCSType *menu){
 
     char *result = null;
@@ -145,6 +178,7 @@ char *generateCategoryId(BCSType *menu){
 
         do {
 
+            /* Make sure this id is unique. */
             random = generateRandomNumber(RANDOM_ID_MIN, RANDOM_ID_MAX);
             memset(result, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
             sprintf(result, "%c%04d", CATEGORY_PREFIX_CHAR, random);
@@ -159,6 +193,8 @@ char *generateCategoryId(BCSType *menu){
 
 }
 
+/* Generates a new random item id.
+ * */
 char *generateItemId(BCSType *menu){
 
     char *result = null;
@@ -169,6 +205,7 @@ char *generateItemId(BCSType *menu){
 
         do {
 
+            /* Make sure this id is unique. */
             random = generateRandomNumber(RANDOM_ID_MIN, RANDOM_ID_MAX);
             memset(result, 0, sizeof(char) * (ID_LEN + EXTRA_SPACE));
             sprintf(result, "%c%04d", ITEM_PREFIX_CHAR, random);
@@ -185,6 +222,21 @@ char *generateItemId(BCSType *menu){
 
 void freeCategories(BCSType* menu){
 
+#ifdef BONUS_2
+
+    ListNodeTypePtr current = menu->head;
+
+    while (current){
+
+        ListNodeTypePtr prev = current;
+
+        current = current->next;
+        freeCategoryNode(prev);
+
+    }
+
+#else
+
     CategoryTypePtr current = menu->headCategory;
 
     while (current){
@@ -196,14 +248,21 @@ void freeCategories(BCSType* menu){
 
     }
 
+#endif
+
 }
 
+/* Iterates through all categories, and free's associated memory.
+ * */
 void freeCategory(CategoryTypePtr category){
+
+#ifndef BONUS_2
 
     ItemTypePtr current = category->headItem;
 
     while (current){
 
+        /* Store the item in prev, so we can access it to free it. */
         ItemTypePtr prev = current;
 
         current = current->nextItem;
@@ -213,8 +272,12 @@ void freeCategory(CategoryTypePtr category){
 
     free(category);
 
+#endif
+
 }
 
+/* Creates a dashed header. Used for individual category headers.
+ * */
 char *createDashedHeader(CategoryTypePtr category){
 
     char bottom[MAX_STRING_LARGE] = {0};
@@ -223,17 +286,24 @@ char *createDashedHeader(CategoryTypePtr category){
     char *top3 = null;
     char *result = null;
     int i = 0;
+    int count = 0;
+
+#ifdef BONUS_2
+    count = category->items->nodeCount;
+#else
+    count = category->numItems;
+#endif
 
     sprintf(top,
         FORMAT_DASHED_HEADER_TOP1,
         category->categoryID,
         category->categoryName,
-        category->numItems
+        count
     );
     sprintf(top2, FORMAT_DASHED_HEADER_TOP2, top);
     top3 = createDashesFromString(top2);
 
-    if (category->numItems){
+    if (count){
 
         sprintf(bottom,
             FORMAT_DASHED_HEADER_BOTTOM,
@@ -266,10 +336,302 @@ char *createDashedHeader(CategoryTypePtr category){
 
 }
 
-void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order){
+
+#ifdef BONUS_2
+/* Iterates through all category nodes, and free's all
+ * associated memory (including child nodes and items).
+ * */
+void freeCategoryNode(ListNodeTypePtr node){
+
+    CategoryTypePtr category = (CategoryTypePtr)node->data;
+    ListNodeTypePtr itemNode = category->items->head;
+
+    while (itemNode){
+
+        ItemTypePtr item = null;
+        ListNodeTypePtr prevNode = itemNode;
+
+        itemNode = (ListNodeTypePtr)itemNode->next;
+        item = (ItemTypePtr)prevNode->data;
+
+        free(item);
+        free(prevNode);
+
+    }
+
+    free(category->items);
+    free(category);
+    free(node);
+
+}
+
+/* Generic node creation. Helper method to shorten the code.
+ * */
+ListNodeTypePtr createNode(void *data, ListNodeTypePtr next){
+
+    ListNodeTypePtr node = calloc(1, sizeof(ListNodeType));
+
+    if (!node){
+
+        fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
+
+    } else {
+
+        node->data = data;
+        node->next = next;
+
+    }
+
+    return node;
+
+}
+
+/* Find node associated with category.
+ * */
+ListNodeTypePtr findCategoryNode(BCSType *menu, CategoryTypePtr category){
+
+    ListNodeTypePtr node = menu->head;
+
+    /* Iterate through all nodes. */
+    while (node){
+
+        CategoryTypePtr ptr = (CategoryTypePtr)node->data;
+
+        if (memcmp(category, ptr, sizeof(ListNodeType)) == 0)
+            return node;
+
+        node = (ListNodeTypePtr)node->next;
+
+    }
+
+    return null;
+
+}
+
+/* Find node associated with item.
+ * */
+ListNodeTypePtr findItemNode(BCSType *menu, CategoryTypePtr category,
+        ItemTypePtr item){
+
+    ListNodeTypePtr node = category->items->head;
+
+    /* Iterate through all nodes. */
+    while (node){
+
+        ItemTypePtr ptr = (ItemTypePtr)node->data;
+
+        if (memcmp(item, ptr, sizeof(ListNodeType)) == 0)
+            return node;
+
+        node = (ListNodeTypePtr)node->next;
+
+    }
+
+    return null;
+
+}
+#endif
+
+/* Add a category to the main data structure, in the correct sorted order.
+ * */
+void addCategoryToMenu(BCSType *menu, CategoryTypePtr category,
+        SortOrder order){
+
+    CategoryTypePtr currentCategory = null;
+
+#ifdef BONUS_2
+
+    static ListNodeTypePtr lastNode = null;
+    ListNodeTypePtr currentNode = null;
+
+    if (menu->head == null){
+
+        ListNodeTypePtr node = createNode(category, null);
+
+        if (!node)
+            return;
+
+        menu->head = node;
+        /* Store last Item so we don't have to iterate
+         * over the whole list to find the next empty slot.*/
+        lastNode = menu->head;
+
+    } else {
+
+        ListNodeTypePtr node = null;
+
+        switch (order){
+            case eSortOrderAsIs:
+
+                node = createNode(category, null);
+
+                if (!node)
+                    return;
+
+                lastNode->next = (struct ListNode*)node;
+                lastNode = (ListNodeTypePtr)lastNode->next;
+
+                break;
+
+            case eSortOrderAscending:
+
+                currentNode = menu->head;
+                currentCategory = (CategoryTypePtr)currentNode->data;
+
+                /* string2 is less than string1 */
+                if (strcasecmp(currentCategory->categoryName,
+                        category->categoryName) > 0){
+
+                    node = createNode(category, currentNode);
+
+                    if (!node)
+                        return;
+
+                    menu->head = node;
+
+                } else {
+
+                    /* leave first item as is, search for item that is higher,
+                     *  and insert in the chain at that point*/
+
+                    lastNode = currentNode;
+                    currentNode = (ListNodeTypePtr)currentNode->next;
+
+                    if (currentNode)
+                        currentCategory = (CategoryTypePtr)currentNode->data;
+
+                    do {
+
+                        if (currentNode == null){
+
+                            node = createNode(category, null);
+
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            currentNode = node;
+                            break;
+
+                        }
+
+                        else if (strcasecmp(currentCategory->categoryName,
+                                category->categoryName) > 0){
+
+                            node = createNode(category, currentNode);
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            break;
+
+                        }
+
+                        lastNode = currentNode;
+                        currentNode = currentNode->next;
+
+                        if (currentNode)
+                            currentCategory =
+                                    (CategoryTypePtr)currentNode->data;
+
+                    } while (currentNode != null);
+
+                    if (currentNode == null){
+
+                        node = createNode(category, null);
+
+                        if (!node)
+                            return;
+                        lastNode->next = node;
+                    }
+
+                }
+
+                break;
+
+            case eSortOrderDescending:
+
+                currentNode = menu->head;
+                currentCategory = (CategoryTypePtr)currentNode->data;
+
+                /* string1 is less than string2 */
+                if (strcasecmp(currentCategory->categoryName,
+                        category->categoryName) < 0){
+
+                    node = createNode(category, currentNode);
+                    if (!node)
+                        return;
+                    menu->head = node;
+
+                } else {
+
+                    /* leave first item as is, search for item that is lower,
+                     *  and insert in the chain at that point*/
+
+                    lastNode = currentNode;
+                    currentNode = currentNode->next;
+
+                    currentCategory = (CategoryTypePtr)currentNode->data;
+
+                    do {
+
+                        if (currentNode == null){
+
+                            node = createNode(category, null);
+
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            currentNode = node;
+                            break;
+                        }
+
+                        else if (strcasecmp(currentCategory->categoryName,
+                                category->categoryName) < 0){
+
+                            node = createNode(category, currentNode);
+
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            break;
+
+                        }
+
+                        lastNode = currentNode;
+                        currentNode = currentNode->next;
+
+                        if (currentNode)
+                            currentCategory =
+                                    (CategoryTypePtr)currentNode->data;
+
+                    } while (currentNode != null);
+
+                    if (currentNode == null){
+
+                        node = createNode(category, null);
+
+                        if (!node)
+                            return;
+
+                        lastNode->next = node;
+
+                    }
+
+                }
+
+                break;
+        }
+
+    }
+
+    menu->nodeCount++;
+
+#else
 
     static CategoryTypePtr lastCategory = null;
-    CategoryTypePtr currentCategory = null;
 
     if (menu->headCategory == null){
 
@@ -291,7 +653,8 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                 currentCategory = menu->headCategory;
 
                 /* string2 is less than string1 */
-                if (strcasecmp(currentCategory->categoryName, category->categoryName) > 0){
+                if (strcasecmp(currentCategory->categoryName,
+                        category->categoryName) > 0){
 
                     category->nextCategory = currentCategory;
                     menu->headCategory = category;
@@ -312,7 +675,8 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                             break;
                         }
 
-                        else if (strcasecmp(currentCategory->categoryName, category->categoryName) > 0){
+                        else if (strcasecmp(currentCategory->categoryName,
+                                category->categoryName) > 0){
                             category->nextCategory = currentCategory;
                             lastCategory->nextCategory = category;
                             break;
@@ -335,7 +699,8 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                 currentCategory = menu->headCategory;
 
                 /* string1 is less than string2 */
-                if (strcasecmp(currentCategory->categoryName, category->categoryName) < 0){
+                if (strcasecmp(currentCategory->categoryName,
+                        category->categoryName) < 0){
 
                     category->nextCategory = currentCategory;
                     menu->headCategory = category;
@@ -356,7 +721,8 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
                             break;
                         }
 
-                        else if (strcasecmp(currentCategory->categoryName, category->categoryName) < 0){
+                        else if (strcasecmp(currentCategory->categoryName,
+                                category->categoryName) < 0){
                             category->nextCategory = currentCategory;
                             lastCategory->nextCategory = category;
                             break;
@@ -379,12 +745,193 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order)
 
     menu->numCategories++;
 
+#endif
+
 }
 
-void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, SortOrder order){
+/* Add an item to the main data structure, in the correct sorted order.
+ * */
+void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item,
+        SortOrder order){
 
     ItemTypePtr currentItem = null;
-    ItemTypePtr lastItem = null;
+
+#ifdef BONUS_2
+
+    if (category->items->head == null){
+
+        ListNodeTypePtr node = createNode(item, null);
+
+        if (!node)
+            return;
+
+        category->items->head = node;
+
+    } else {
+
+        ListNodeTypePtr currentItemNode = null;
+        ListNodeTypePtr node = null;
+        ListNodeTypePtr lastNode = null;
+
+        switch (order){
+            case eSortOrderAsIs:
+
+                currentItemNode = category->items->head;
+                currentItem = (ItemTypePtr)currentItemNode->data;
+
+                do {
+
+                    if (currentItemNode == null){
+                        node = createNode(item, null);
+                        if (!node)
+                            return;
+                        currentItemNode->next = node;
+                        break;
+                    }
+
+                    currentItemNode = currentItemNode->next;
+
+                } while (currentItemNode != null);
+
+                break;
+
+            case eSortOrderAscending:
+
+                currentItemNode = category->items->head;
+                currentItem = (ItemTypePtr)currentItemNode->data;
+
+                /* string2 is less than string1 */
+                if (strcasecmp(currentItem->itemName, item->itemName) > 0){
+
+                    node = createNode(item, currentItemNode);
+                    if (!node)
+                        return;
+                    category->items->head = node;
+
+                } else {
+
+                    /* leave first item as is, search for item that is higher,
+                     *  and insert in the chain at that point*/
+
+                    lastNode = currentItemNode;
+                    currentItemNode = currentItemNode->next;
+
+                    if (currentItemNode)
+                        currentItem = (ItemTypePtr)currentItemNode->data;
+
+                    while (currentItemNode != null){
+
+                        if (currentItemNode == null)
+                            break;
+
+                        else if (strcasecmp(currentItem->itemName,
+                                item->itemName) > 0){
+
+                            node = createNode(item, currentItemNode);
+
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            break;
+
+                        }
+
+                        lastNode = currentItemNode;
+                        currentItemNode = currentItemNode->next;
+
+                        if (currentItemNode)
+                            currentItem = (ItemTypePtr)currentItemNode->data;
+
+                    }
+
+                    if (currentItemNode == null){
+
+                        node = createNode(item, null);
+
+                        if (!node)
+                            return;
+
+                        lastNode->next = node;
+
+                    }
+
+                }
+
+                break;
+
+            case eSortOrderDescending:
+
+                currentItemNode = category->items->head;
+                currentItem = (ItemTypePtr)currentItemNode->data;
+
+                /* string1 is less than string2 */
+                if (strcasecmp(currentItem->itemName, item->itemName) < 0){
+
+                    node = createNode(item, currentItemNode);
+
+                    if (!node)
+                        return;
+
+                    category->items->head = node;
+
+                } else {
+
+                    /* leave first item as is, search for item that is lower,
+                     *  and insert in the chain at that point*/
+
+                    lastNode = currentItemNode;
+                    currentItemNode = currentItemNode->next;
+
+                    currentItem = (ItemTypePtr)currentItemNode->data;
+
+                    while (currentItemNode != null) {
+
+                        if (currentItemNode == null)
+                            break;
+
+                        else if (strcasecmp(currentItem->itemName,
+                                item->itemName) < 0){
+
+                            node = createNode(item, currentItemNode);
+
+                            if (!node)
+                                return;
+
+                            lastNode->next = node;
+                            break;
+
+                        }
+
+                        lastNode = currentItemNode;
+                        currentItemNode = currentItemNode->next;
+
+                        if (currentItemNode)
+                            currentItem = (ItemTypePtr)currentItemNode->data;
+
+                    }
+
+                    if (currentItemNode == null){
+
+                        node = createNode(item, null);
+
+                        if (!node)
+                            return;
+
+                        lastNode->next = node;
+
+                    }
+
+                }
+
+                break;
+        }
+
+    }
+
+    category->items->nodeCount++;
+
+#else
 
     if (category->headItem == null){
 
@@ -425,7 +972,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                     /* leave first item as is, search for item that is higher,
                      *  and insert in the chain at that point*/
 
-                    lastItem = currentItem;
+                    ItemTypePtr lastItem = currentItem;
                     currentItem = currentItem->nextItem;
 
                     do {
@@ -435,7 +982,8 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                             break;
                         }
 
-                        else if (strcasecmp(currentItem->itemName, item->itemName) > 0){
+                        else if (strcasecmp(currentItem->itemName,
+                                item->itemName) > 0){
                             item->nextItem = currentItem;
                             lastItem->nextItem = item;
                             break;
@@ -468,7 +1016,7 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                     /* leave first item as is, search for item that is lower,
                      *  and insert in the chain at that point*/
 
-                    lastItem = currentItem;
+                    ItemTypePtr lastItem = currentItem;
                     currentItem = currentItem->nextItem;
 
                     do {
@@ -478,7 +1026,8 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
                             break;
                         }
 
-                        else if (strcasecmp(currentItem->itemName, item->itemName) < 0){
+                        else if (strcasecmp(currentItem->itemName,
+                                item->itemName) < 0){
                             item->nextItem = currentItem;
                             lastItem->nextItem = item;
                             break;
@@ -501,9 +1050,16 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, So
 
     category->numItems++;
 
+#endif
+
 }
 
-bool validateItemPrice(const char* price, bool showError){
+/* Validates individual item prices. This also ensures the current price is
+ * not lower than previous price, if any.
+ * */
+
+bool validateItemPrice(const char* price, const char *prevPrice,
+        bool showError){
 
     bool result = false;
     const char delim[] = {PRICE_SEPARATOR_CHAR, 0};
@@ -512,6 +1068,7 @@ bool validateItemPrice(const char* price, bool showError){
     int i = 0;
     int len = 0;
 
+    /* Only continue with validation, if correct token count. */
     if (count == PRICE_TOKEN_COUNT){
 
         for (i = 0, result = true; i < count && result; i++){
@@ -527,6 +1084,10 @@ bool validateItemPrice(const char* price, bool showError){
                 result = false;
         }
 
+        /* Ensure current price is not lower than previous price. */
+        if (result && prevPrice && strcmp(price, prevPrice) < 0)
+            result = false;
+
     }
 
     if (!result && showError)
@@ -538,6 +1099,8 @@ bool validateItemPrice(const char* price, bool showError){
 
 }
 
+/* Validates all category tokens.
+ * */
 bool validateCategoryTokens(char **tokens, bool showError){
 
     bool result = true;
@@ -550,6 +1113,8 @@ bool validateCategoryTokens(char **tokens, bool showError){
 
 }
 
+/* Validates all menu tokens.
+ * */
 bool validateMenuTokens(char **tokens, bool showError){
 
     bool result = true;
@@ -562,11 +1127,14 @@ bool validateMenuTokens(char **tokens, bool showError){
 
 }
 
+/* Validate the drink type.
+ * */
 bool validateCategoryType(const char *type, bool showError){
 
     const size_t len = strlen(type);
     const char c = toupper(type[0]);
-    const bool result = (len == DRINK_LEN && (c == eDrinkHot || c == eDrinkCold));
+    const bool result =
+            (len == DRINK_LEN && (c == eDrinkHot || c == eDrinkCold));
 
     if (!result && showError)
         fputs(MESSAGE_ERROR_INVALID_CATEGORY_TYPE, stderr);
@@ -575,6 +1143,8 @@ bool validateCategoryType(const char *type, bool showError){
 
 }
 
+/* Validate a category token, according to it's index.
+ * */
 bool validateCategoryToken(char **tokens, const int token, bool showError){
 
     bool result = false;
@@ -610,6 +1180,8 @@ bool validateCategoryToken(char **tokens, const int token, bool showError){
 
 }
 
+/* Validate a menu token, according to it's index.
+ * */
 bool validateMenuToken(char **tokens, const int token, bool showError){
 
     bool result = false;
@@ -634,17 +1206,17 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
 
         case eMenuPrice1:
 
-            result = validateItemPrice(s, false);
+            result = validateItemPrice(s, null, false);
             break;
 
         case eMenuPrice2:
 
-            result = validateItemPrice(s, false);
+            result = validateItemPrice(s, tokens[token - 1], false);
             break;
 
         case eMenuPrice3:
 
-            result = validateItemPrice(s, false);
+            result = validateItemPrice(s, tokens[token - 1], false);
             break;
 
         case eMenuDescription:
@@ -660,7 +1232,11 @@ bool validateMenuToken(char **tokens, const int token, bool showError){
 
 }
 
-bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order){
+/* Converts the string into either a category or an item, then
+ * creates either a category or an item from that string.
+ * */
+bool populateMenu(BCSType *menu, const char *line, bool isSubMenu,
+        SortOrder order){
 
     bool result = false;
     ItemTypePtr item = null;
@@ -690,6 +1266,8 @@ bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder ord
 
 }
 
+/* Load data from a file, into either categories or items.
+ * */
 bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
 
     FILE *fp = null;
@@ -703,9 +1281,14 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
 
         do {
 
-            len = getLineFromStream(&line, fp, true);
+            result = false;
+            freeString(&line);
 
-            if (len > 0 && !populateMenu(menu, line, isSubMenu, DEFAULT_SORT_ORDER)){
+            /* Keep reading lines (skipping blanks) until EOF. */
+            len = readLineFromStream(&line, fp);
+
+            if (len > 0 &&
+                    !populateMenu(menu, line, isSubMenu, DEFAULT_SORT_ORDER)){
                 freeString(&line);
                 fclose(fp);
                 return result;
@@ -724,10 +1307,26 @@ bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu){
 
 }
 
+/* Lookup and return an existing category by it's id.
+ * */
 CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id){
 
     CategoryTypePtr ptr = null;
     CategoryTypePtr head = null;
+
+#ifdef BONUS_2
+
+    ListNodeTypePtr headNode = null;
+
+    for (headNode = menu->head; headNode != null; headNode = headNode->next){
+        head = (CategoryTypePtr)headNode->data;
+        if (strcmp(head->categoryID, id) == 0){
+            ptr = head;
+            break;
+        }
+    }
+
+#else
 
     for (head = menu->headCategory; head != null; head = head->nextCategory){
         if (strcmp(head->categoryID, id) == 0){
@@ -736,17 +1335,45 @@ CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id){
         }
     }
 
+#endif
+
     return ptr;
 
 }
 
+/* Lookup and return an existing item by it's id.
+ * */
 ItemTypePtr getItemFromId(BCSType *menu, const char *id){
 
     ItemTypePtr ptr = null;
     ItemTypePtr head = null;
     CategoryTypePtr chead = null;
 
-    for (chead = menu->headCategory; chead != null && ptr == null; chead = chead->nextCategory){
+#ifdef BONUS_2
+
+    ListNodeTypePtr cheadNode = null;
+    ListNodeTypePtr headNode = null;
+
+    for (cheadNode = menu->head;
+            cheadNode != null && ptr == null;
+            cheadNode = cheadNode->next){
+        chead = (CategoryTypePtr)cheadNode->data;
+        for (headNode = chead->items->head;
+                headNode != null;
+                headNode = headNode->next){
+            head = (ItemTypePtr)headNode->data;
+            if (strcmp(head->itemID, id) == 0){
+                ptr = head;
+                break;
+            }
+        }
+    }
+
+#else
+
+    for (chead = menu->headCategory;
+            chead != null && ptr == null;
+            chead = chead->nextCategory){
         for (head = chead->headItem; head != null; head = head->nextItem){
             if (strcmp(head->itemID, id) == 0){
                 ptr = head;
@@ -755,10 +1382,15 @@ ItemTypePtr getItemFromId(BCSType *menu, const char *id){
         }
     }
 
+#endif
+
     return ptr;
 
 }
 
+/* Convert a delimited string into a category. This will fail if the input
+ * string is not in correct format.
+ * */
 CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
 
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
@@ -769,6 +1401,7 @@ CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
 
     count = explode(delim, str, &tokens);
 
+    /* Only continue if token count is valid. */
     if (count == eCategoryMax){
 
         if (!validateCategoryTokens(tokens, true)){
@@ -776,6 +1409,7 @@ CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
             return ptr;
         }
 
+        /* Does this category already exist? */
         cp = getCategoryFromId(menu, tokens[eCategoryId]);
 
         if (cp != null){
@@ -792,9 +1426,15 @@ CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
 
         } else {
 
+
+#ifdef BONUS_2
+            ptr->items = calloc(1, sizeof(BCSType));
+            ptr->items->nodeCount = 0;
+#else
             ptr->numItems = 0;
             ptr->headItem = null;
             ptr->nextCategory = null;
+#endif
             ptr->drinkType = toupper(tokens[eCategoryType][0]);
 
             strcpy(ptr->categoryID, tokens[eCategoryId]);
@@ -815,7 +1455,11 @@ CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
 
 }
 
-ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *category){
+/* Convert a delimited string into an item. This will fail if the input
+ * string is not in correct format.
+ * */
+ItemTypePtr menuItemFromString(BCSType *menu, const char *str,
+        CategoryTypePtr *category){
 
     const char delim[] = {INPUT_SEPARATOR_CHAR, 0};
     char **tokens = null;
@@ -829,6 +1473,7 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 
     count = explode(delim, str, &tokens);
 
+    /* Only continue if token count is valid. */
     if (count == eMenuMax){
 
         if (!validateMenuTokens(tokens, true)){
@@ -836,14 +1481,20 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
             return ptr;
         }
 
+        /* Does this category exist? */
         *category = getCategoryFromId(menu, tokens[eMenuCategoryId]);
 
         if (*category == null){
-            fprintf(stderr, MESSAGE_ERROR_CATEGORY_NOT_EXIST, tokens[eMenuCategoryId]);
+            fprintf(
+                stderr,
+                MESSAGE_ERROR_CATEGORY_NOT_EXIST,
+                tokens[eMenuCategoryId]
+            );
             freeDynamicStringArray(&tokens, count);
             return ptr;
         }
 
+        /* Does this item already exist? */
         ip = getItemFromId(menu, tokens[eMenuId]);
 
         if (ip != null){
@@ -860,7 +1511,9 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 
         } else {
 
+#ifndef BONUS_2
             ptr->nextItem = null;
+#endif
 
             strcpy(ptr->itemID, tokens[eMenuId]);
             strcpy(ptr->itemName, tokens[eMenuType]);
@@ -868,10 +1521,14 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 
             for (i = 0; i < NUM_PRICES; i++){
 
-                priceCount = explode(priceDelim, tokens[eMenuPrice1 + i], &prices);
+                priceCount =
+                        explode(priceDelim, tokens[eMenuPrice1 + i], &prices);
 
-                stringToInteger(prices[ePriceDollars], (int*)&ptr->prices[i].dollars);
-                stringToInteger(prices[ePriceCents], (int*)&ptr->prices[i].cents);
+                stringToInteger(prices[ePriceDollars],
+                        (int*)&ptr->prices[i].dollars);
+
+                stringToInteger(prices[ePriceCents],
+                        (int*)&ptr->prices[i].cents);
 
                 freeDynamicStringArray(&prices, priceCount);
 
@@ -891,6 +1548,8 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *
 
 }
 
+/* Converts category information to a report style string.
+ * */
 char *createReport(CategoryTypePtr category){
 
     int i = 0;
@@ -899,9 +1558,19 @@ char *createReport(CategoryTypePtr category){
     char *title = null;
     char s1[MAX_STRING_MEDIUM] = {0};
     char s2[MAX_STRING_MEDIUM] = {0};
+#ifdef BONUS_2
+    ListNodeTypePtr itemNode = category->items->head;
+    ItemTypePtr item = (ItemTypePtr)itemNode->data;
+#else
     ItemTypePtr item = category->headItem;
+#endif
 
-    sprintf(s1, FORMAT_DASHED_HEADER_REPORT, category->categoryID, category->categoryName);
+    sprintf(
+        s1,
+        FORMAT_DASHED_HEADER_REPORT,
+        category->categoryID,
+        category->categoryName
+    );
     sprintf(s2, "%-61s", s1);
     title = createDashesFromString(s2);
 
@@ -914,10 +1583,15 @@ char *createReport(CategoryTypePtr category){
     freeString(&title);
     len = strlen(result);
 
+#ifdef BONUS_2
+    while (itemNode){
+#else
     while (item){
+#endif
 
         i = 0;
 
+        /* Iterate through all item tokens. */
         while (i < eMenuMax){
 
             char temp[MAX_STRING_LARGE] = {0};
@@ -927,24 +1601,29 @@ char *createReport(CategoryTypePtr category){
             switch (i){
                 case eMenuId:
 
-                    sprintf(temp, "\n%-12s: %s\n", TITLE_REPORT_ITEM_ID, item->itemID);
+                    sprintf(temp, "\n%-12s: %s\n",
+                            TITLE_REPORT_ITEM_ID, item->itemID);
                     i++; /* bypass cat id*/
                     break;
 
                 case eMenuType:
 
-                    sprintf(temp, "%-12s: %s\n", TITLE_REPORT_ITEM_NAME, item->itemName);
+                    sprintf(temp, "%-12s: %s\n",
+                            TITLE_REPORT_ITEM_NAME, item->itemName);
                     break;
 
                 case eMenuPrice1:
 
-                    sprintf(temp, "%-12s:", TITLE_REPORT_ITEM_PRICES);
+                    sprintf(temp, "%-12s:",
+                            TITLE_REPORT_ITEM_PRICES);
 
                     while (j < NUM_PRICES){
 
                         char temp2[MAX_STRING_SMALL] = {0};
 
-                        sprintf(temp2, " %c%d.%02d", CURRENCY_CHAR, item->prices[j].dollars, item->prices[j].cents);
+                        sprintf(temp2, " %c%d.%02d",
+                                CURRENCY_CHAR, item->prices[j].dollars,
+                                item->prices[j].cents);
                         strcat(temp, temp2);
 
                         j++;
@@ -958,8 +1637,12 @@ char *createReport(CategoryTypePtr category){
 
                 case eMenuDescription:
 
-                    description = wordWrap(item->itemDescription, WORD_WRAP_LIMIT);
-                    sprintf(temp, "%-12s:\n%s\n", TITLE_REPORT_ITEM_DESCRIPTION, description);
+                    description = wordWrap(
+                        item->itemDescription,
+                        WORD_WRAP_LIMIT
+                    );
+                    sprintf(temp, "%-12s:\n%s\n",
+                            TITLE_REPORT_ITEM_DESCRIPTION, description);
                     freeString(&description);
 
                     break;
@@ -975,7 +1658,13 @@ char *createReport(CategoryTypePtr category){
 
         }
 
+#ifdef BONUS_2
+        itemNode = itemNode->next;
+        if (itemNode)
+            item = (ItemTypePtr)itemNode->data;
+#else
         item = item->nextItem;
+#endif
 
     }
 
@@ -983,6 +1672,9 @@ char *createReport(CategoryTypePtr category){
 
 }
 
+/* Creates a report from category information, then saves the report
+ * to file.
+ * */
 bool createAndSaveReport(CategoryTypePtr category, const char *fileName){
 
     bool result = false;
@@ -1001,17 +1693,35 @@ bool createAndSaveReport(CategoryTypePtr category, const char *fileName){
 
 }
 
-void eachItem(CategoryTypePtr category, void (*fp)(ItemTypePtr item)){
+/* Iterate through each item in a category, using a function
+ * pointer as a call back.
+ * */
+void eachItem(CategoryTypePtr category, itemIteratorCallback itemCallback){
+
+#ifdef BONUS_2
+
+    ListNodeTypePtr ptrNode = category->items->head;
+
+    while (ptrNode){
+        itemCallback((ItemTypePtr)ptrNode->data);
+        ptrNode = ptrNode->next;
+    }
+
+#else
 
     ItemTypePtr ptr = category->headItem;
 
     while (ptr){
-        (*fp)(ptr);
+        itemCallback(ptr);
         ptr = ptr->nextItem;
     }
 
+#endif
+
 }
 
+/* Output item information to stdout.
+ * */
 void displayItem(ItemTypePtr ip){
 
     int i = 0;
@@ -1021,7 +1731,8 @@ void displayItem(ItemTypePtr ip){
 
     for (i = 0; i < NUM_PRICES; i++){
         char price[MAX_STRING_SMALL] = {0};
-        sprintf(price, FORMAT_PRICE, ip->prices[i].dollars, ip->prices[i].cents);
+        sprintf(price, FORMAT_PRICE, ip->prices[i].dollars,
+                ip->prices[i].cents);
         strcat(item, price);
     }
 
@@ -1218,6 +1929,10 @@ bool getStringFromStdIn(char *result, int length, const char *message,
 
 }
 
+/* Reads the next available line from a stream.
+ * This reads the string as chunks and appends those chunks
+ * to a buffer. The final buffer is returned.
+ * */
 int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
 
     bool moreChunks = false;
@@ -1235,7 +1950,8 @@ int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
 
             const int lineSize = chunkSize * ++power;
 
-            if (!allocateString(&chunk, chunkSize) || !allocateString(&line, lineSize)){
+            if (!allocateString(&chunk, chunkSize) ||
+                    !allocateString(&line, lineSize)){
                 freeStrings(2, &chunk, &line);
                 return len;
             }
@@ -1243,7 +1959,6 @@ int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
             fgets(chunk, chunkSize, stream);
             len = strlen(chunk);
             moreChunks = len > 0 && chunk[len - 1] != '\n';
-            /*moreChunks = len > 0 && strchr(chunk, '\n') == null;*/
 
             if (len > 0){
                 if (power > 1)
@@ -1262,9 +1977,9 @@ int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
             if (stripNewLine && line[strlen(line) - 1] == '\n')
                 line[strlen(line) - 1] = 0;
 
-            /* TODO: is this ok? or should we return a null-terminated empty string instead? */
-            if (strlen(line) > 0)
-                *result = copyString(line);
+            *result = copyString(strlen(line) ? line : "");
+            /* Reset the length, since we have now modified the string. */
+            len = strlen(*result);
 
         }
 
@@ -1276,13 +1991,35 @@ int getLineFromStream(char **result, FILE *stream, bool stripNewLine){
 
 }
 
+/* Reads the next readable line from a stream - skipping new lines.
+ * */
+int readLineFromStream(char **result, FILE *fp){
+
+    int len = 0;
+
+    if (fp){
+
+        while (!len && !feof(fp)){
+            len = getLineFromStream(result, fp, true);
+            if (!len)
+                freeString(result);
+        }
+
+    }
+
+    return len;
+
+}
+
+/* Reads the first readable line from a file - skipping empty lines.
+ * */
 int getFirstLineFromFile(char **result, const char *fileName){
 
     int len = 0;
     FILE *fp = fopen(fileName, "r");
 
     if (fp){
-        len = getLineFromStream(result, fp, true);
+        len = readLineFromStream(result, fp);
         fclose(fp);
     }
 
@@ -1290,6 +2027,8 @@ int getFirstLineFromFile(char **result, const char *fileName){
 
 }
 
+/* Helper method to get category id from user.
+ * */
 char *getCategoryIdFromStdIn(BCSType* menu){
 
     char catId[ID_LEN + EXTRA_SPACES] = {0};
@@ -1301,7 +2040,8 @@ char *getCategoryIdFromStdIn(BCSType* menu){
     while (!result){
 
         memset(catId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true, true);
+        result = getStringFromStdIn(catId, ID_LEN, message, ID_LEN, true,
+                true);
 
         if (strlen(catId) && !getCategoryFromId(menu, catId)){
 
@@ -1316,6 +2056,9 @@ char *getCategoryIdFromStdIn(BCSType* menu){
 
 }
 
+/* Helper method to get category name from user when
+ * adding a new category.
+ * */
 char *getCategoryNameFromStdIn(BCSType* menu){
 
     bool result = false;
@@ -1326,13 +2069,17 @@ char *getCategoryNameFromStdIn(BCSType* menu){
 
     while (!result){
         memset(catName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(catName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+        result = getStringFromStdIn(catName, MAX_NAME_LEN, message,
+                MIN_NAME_LEN, true, true);
     }
 
     return copyString(catName);
 
 }
 
+/* Helper method to get category type from user when
+ * adding a new category.
+ * */
 char *getCategoryTypeFromStdIn(BCSType* menu){
 
     bool result = false;
@@ -1341,7 +2088,8 @@ char *getCategoryTypeFromStdIn(BCSType* menu){
     while (!result){
 
         catType[0] = 0;
-        result = getStringFromStdIn(catType, DRINK_LEN, INPUT_CATEGORY_TYPE, DRINK_LEN, true, true);
+        result = getStringFromStdIn(catType, DRINK_LEN,
+                INPUT_CATEGORY_TYPE, DRINK_LEN, true, true);
 
         if (strlen(catType))
             result = validateCategoryType(catType, true);
@@ -1352,6 +2100,9 @@ char *getCategoryTypeFromStdIn(BCSType* menu){
 
 }
 
+/* Helper method to get category description from user when
+ * adding a new category.
+ * */
 char *getCategoryDescFromStdIn(BCSType* menu){
 
     bool result = false;
@@ -1362,13 +2113,16 @@ char *getCategoryDescFromStdIn(BCSType* menu){
 
     while (!result){
         memset(catDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(catDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+        result = getStringFromStdIn(catDesc, MAX_DESC_LEN, message,
+                MIN_DESC_LEN, true, true);
     }
 
     return copyString(catDesc);
 
 }
 
+/* Helper method to get item id from user when deleting an item.
+ * */
 char *getItemIdFromStdIn(BCSType *menu){
 
     char itemId[ID_LEN + EXTRA_SPACES] = {0};
@@ -1380,7 +2134,8 @@ char *getItemIdFromStdIn(BCSType *menu){
     while (!result){
 
         memset(itemId, 0, sizeof(char) * ID_LEN + EXTRA_SPACES);
-        result = getStringFromStdIn(itemId, ID_LEN, message, MIN_STRING_NONE, true, true);
+        result = getStringFromStdIn(itemId, ID_LEN, message,
+                MIN_STRING_NONE, true, true);
 
         if (strlen(itemId) && !getItemFromId(menu, itemId)){
             fprintf(stderr, MESSAGE_ERROR_MENU_NOT_EXIST, itemId);
@@ -1393,6 +2148,8 @@ char *getItemIdFromStdIn(BCSType *menu){
 
 }
 
+/* Helper method to get item name from user when adding a new item.
+ * */
 char *getItemNameFromStdIn(BCSType *menu){
 
     bool result = false;
@@ -1404,7 +2161,8 @@ char *getItemNameFromStdIn(BCSType *menu){
     do {
 
         memset(itemName, 0, sizeof(char) * (MAX_NAME_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(itemName, MAX_NAME_LEN, message, MIN_NAME_LEN, true, true);
+        result = getStringFromStdIn(itemName, MAX_NAME_LEN, message,
+                MIN_NAME_LEN, true, true);
 
     } while (!result);
 
@@ -1412,7 +2170,12 @@ char *getItemNameFromStdIn(BCSType *menu){
 
 }
 
-char *getItemPriceFromStdIn(BCSType *menu, int priceIndex){
+/* Helper method to get item prices from user when adding a new item.
+ * This will also validate the price against previous prices and
+ * ensure it is not lower.
+ * */
+char *getItemPriceFromStdIn(BCSType *menu, const int priceIndex,
+        const char *prevPrice){
 
     bool result = false;
     char price[PRICE_LEN + EXTRA_SPACE] = {0};
@@ -1431,14 +2194,16 @@ char *getItemPriceFromStdIn(BCSType *menu, int priceIndex){
             break;
     }
 
-    sprintf(message, temp, CURRENCY_CHAR, MIN_ITEM_PRICE, CURRENCY_CHAR, MAX_ITEM_PRICE);
+    sprintf(message, temp,
+            CURRENCY_CHAR, MIN_ITEM_PRICE, CURRENCY_CHAR, MAX_ITEM_PRICE);
 
     do {
 
         memset(price, 0, sizeof(char) * (PRICE_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(price, PRICE_LEN, message, PRICE_LEN, true, true);
+        result = getStringFromStdIn(price, PRICE_LEN, message,
+                PRICE_LEN, true, true);
 
-        if (strlen(price) && !validateItemPrice(price, true))
+        if (strlen(price) && !validateItemPrice(price, prevPrice, true))
             result = false;
 
     } while (!result);
@@ -1447,6 +2212,8 @@ char *getItemPriceFromStdIn(BCSType *menu, int priceIndex){
 
 }
 
+/* Helper method to get item description from user when adding a new item.
+ * */
 char *getItemDescFromStdIn(BCSType *menu){
 
     bool result = false;
@@ -1458,14 +2225,14 @@ char *getItemDescFromStdIn(BCSType *menu){
     do {
 
         memset(itemDesc, 0, sizeof(char) * (MAX_DESC_LEN + EXTRA_SPACE));
-        result = getStringFromStdIn(itemDesc, MAX_DESC_LEN, message, MIN_DESC_LEN, true, true);
+        result = getStringFromStdIn(itemDesc, MAX_DESC_LEN, message,
+                MIN_DESC_LEN, true, true);
 
     } while (!result);
 
     return copyString(itemDesc);
 
 }
-
 
 
 
@@ -1531,6 +2298,8 @@ void freeStringArray(char **arr, const int length){
 
 }
 
+/* Used to free a string array that has been created with the explode() method.
+ * */
 void freeDynamicStringArray(char ***arr, const int length){
 
     int i = 0;
@@ -1564,11 +2333,12 @@ void freeStrings(const int length, ...){
 }
 
 
-
+/* Allocate memory and then copy supplied string to new buffer.
+ * */
 char *copyString(const char *str){
 
     int i = 0;
-    size_t len = strlen(str);
+    size_t len = str ? strlen(str) : 0;
     char *s = malloc(sizeof(char) * (len + EXTRA_SPACE));
 
     if (!s){
@@ -1585,6 +2355,8 @@ char *copyString(const char *str){
 
 }
 
+/* Split a delimited string into a string array.
+ * */
 int explode(const char *delimeter, const char *str, char ***array){
 
     int count = 0;
@@ -1616,6 +2388,8 @@ int explode(const char *delimeter, const char *str, char ***array){
 
 }
 
+/* Convert an array of strings to a delimited string.
+ * */
 char *implode(const char *delimeter, char **array, const int length){
 
     int len = 0;
@@ -1647,6 +2421,8 @@ char *implode(const char *delimeter, char **array, const int length){
 
 }
 
+/* Converts a numeric string to an int.
+ * */
 bool stringToInteger(const char *str, int *result){
 
     bool succeeded = false;
@@ -1664,6 +2440,8 @@ bool stringToInteger(const char *str, int *result){
 
 }
 
+/* Tests if a string is numeric.
+ * */
 bool isNumeric(const char *str){
 
     bool result = false;
@@ -1691,12 +2469,17 @@ bool isNumeric(const char *str){
 
 }
 
+/* Generates a random number. Used for category and item id generation.
+ * */
 int generateRandomNumber(const int min, const int max){
 
     return min + (rand() % max);
 
 }
 
+/* This will replace spaces with a new line character by looking
+ * for the last word that will fit inside the length (max).
+ * */
 char *wordWrap(const char *str, const int limit){
 
     char *result = null;
@@ -1768,9 +2551,13 @@ bool fileExists(const char *fileName){
 
 }
 
+/* This method ensures that the category file
+ * comes before the items file. It does this by checking
+ * the number of tokens after the first readable line
+ * has been split.
+ * */
 bool checkArgumentOrder(char* argv[]){
 
-    bool result = false;
     char delim[] = {INPUT_SEPARATOR_CHAR, 0};
     char *line = null;
     char **arr = null;
@@ -1778,40 +2565,47 @@ bool checkArgumentOrder(char* argv[]){
 
     len = getFirstLineFromFile(&line, argv[EXPECTED_CATEGORY_ARG_INDEX]);
 
-    if (len > 0){
+    if (!len){
+        freeString(&line);
+        fprintf(stderr, MESSAGE_ERROR_FILE_EMPTY,
+                argv[EXPECTED_CATEGORY_ARG_INDEX]);
+        return false;
+    }
+
+    len = explode(delim, line, &arr);
+    freeString(&line);
+    freeDynamicStringArray(&arr, len);
+
+    if (len != eCategoryMax){
+        fprintf(stderr, MESSAGE_ERROR_ARG_CATEGORY_ORDER,
+                EXPECTED_CATEGORY_ARG_INDEX);
+        return false;
+    }
+
+    len = getFirstLineFromFile(&line, argv[EXPECTED_ITEM_ARG_INDEX]);
+
+    if (!len){
+        freeString(&line);
+    } else {
 
         len = explode(delim, line, &arr);
         freeString(&line);
         freeDynamicStringArray(&arr, len);
 
-        if (len != eCategoryMax){
-            fprintf(stderr, MESSAGE_ERROR_ARG_CATEGORY_ORDER, EXPECTED_CATEGORY_ARG_INDEX);
-
-        } else {
-
-            len = getFirstLineFromFile(&line, argv[EXPECTED_ITEM_ARG_INDEX]);
-
-            if (len > 0){
-
-                len = explode(delim, line, &arr);
-                freeString(&line);
-                freeDynamicStringArray(&arr, len);
-
-                if (len != eMenuMax)
-                    fprintf(stderr, MESSAGE_ERROR_ARG_ITEM_ORDER, EXPECTED_ITEM_ARG_INDEX);
-                else
-                    result = true;
-
-            }
-
+        if (len != eMenuMax){
+            fprintf(stderr, MESSAGE_ERROR_ARG_ITEM_ORDER,
+                    EXPECTED_ITEM_ARG_INDEX);
+            return false;
         }
 
     }
 
-    return result;
+    return true;
 
 }
 
+/* This makes the console usable in Eclipse for debugging.
+ * */
 void fixConsole(FILE *stream){
 
     /* Stupid Eclipse won't show the console until after it has stopped.
@@ -1821,7 +2615,8 @@ void fixConsole(FILE *stream){
 }
 
 
-
+/* Helper method to create a dashed string.
+ * */
 char *createDashes(const int length){
 
     char *dashes = null;

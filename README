@@ -1,33 +1,47 @@
 /****************************************************************************
 * COSC2138/CPT220 - Programming Principles 2A
 * Study Period  2 2014 Assignment #2 - Brazilian Coffee Shop system
-* Full Name        : EDIT HERE
-* Student Number   : EDIT HERE
+* Full Name        : Greg Kappatos
+* Student Number   : s3460969
 * Start up code provided by the CTEACH team
 ****************************************************************************/
 
 If selected, do you grant permission for your assignment 
-to be released as an anonymous student sample solution?
+to be released as an anonymous student sample solution? No
 --------------------------------------------------------
 
-
-
-Known bugs:
+Known bugs: None
 -----------
 
-
-
-Incomplete functionality:
+Incomplete functionality: None
 -------------------------
 
-
-
-Assumptions:
+Assumptions: None
 ------------
 
-
-
 Any other notes for the marker:
+
+Bonus 1:
+I used a function pointer as an iteration callback for ItemTypePtr types.
+Look inside bcs_utility.c around line 1700 at the eachItem() method.
+
+Bonus 2:
+I have made 3 projects (well only 1 but used Git to create other branches).
+The first version incorporates both normal linked lists and generic linked lists
+using #ifdef BONUS_2 wherever required. I prefer this way because you only
+need to maintain 1 project and don't duplicate code.
+
+The second version is the normal version without any generic linked lists, or the bonus 2.
+The third version is the Bonus 2 version (using generic linked lists instead of hard coded ones).
+
+All 3 projects are exactly the same. So if you just look at project 1, you won't need to look at
+the other 2 (Just go into bcs.h and comment out #define BONUS_2 true, then recompile).
+Likewise, if you don't want to view the first project, you will have to view
+both project 2 and 3 to see the full code.
+
+I have been asked to describe where the bonus 2 is located, and it is pretty much throughout
+the whole project. The main changes are in bcs.h, bcs_utility.h, bcs_utility.c and bcs_options.c.
+I think everything is pretty straight forward (but that's probably because I made it) so if you
+have any questions about this please feel free to contact me for verification.
+
 -------------------------------
-
-

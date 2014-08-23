@@ -1,8 +1,8 @@
 /****************************************************************************
 * COSC2138/CPT220 - Programming Principles 2A
 * Study Period  2 2014 Assignment #2 - Brazilian Coffee Shop system
-* Full Name        : EDIT HERE
-* Student Number   : EDIT HERE
+* Full Name        : Greg Kappatos
+* Student Number   : s3460969
 * Start up code provided by the CTEACH team
 ****************************************************************************/
 
@@ -16,32 +16,57 @@ int loadData(BCSType* menu, char* menuFile, char* submenuFile);
 void systemFree(BCSType* menu);
 
 /* BCSType functions. */
-char *categoryToString(CategoryTypePtr category);
-char *itemToString(ItemTypePtr item, CategoryTypePtr parent);
+
 char *generateCategoryId(BCSType *menu);
 char *generateItemId(BCSType *menu);
 void freeCategories(BCSType* menu);
-void freeCategory(CategoryTypePtr category);
-char *createDashedHeader(CategoryTypePtr category);
-void addCategoryToMenu(BCSType *menu, CategoryTypePtr category, SortOrder order);
-void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item, SortOrder order);
+void addCategoryToMenu(BCSType *menu, CategoryTypePtr category,
+        SortOrder order);
+void addItemToMenu(BCSType *menu, CategoryTypePtr category,
+        ItemTypePtr item, SortOrder order);
 CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id);
 ItemTypePtr getItemFromId(BCSType *menu, const char *id);
 CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str);
-ItemTypePtr menuItemFromString(BCSType *menu, const char *str, CategoryTypePtr *category);
-bool validateItemPrice(const char* price, bool showError);
+ItemTypePtr menuItemFromString(BCSType *menu, const char *str,
+        CategoryTypePtr *category);
+bool populateMenu(BCSType *menu, const char *line, bool isSubMenu,
+        SortOrder order);
+bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
+
+#ifdef BONUS_2
+void freeCategoryNode(ListNodeTypePtr node);
+ListNodeTypePtr createNode(void *data, ListNodeTypePtr next);
+ListNodeTypePtr findCategoryNode(BCSType *menu, CategoryTypePtr category);
+ListNodeTypePtr findItemNode(BCSType *menu, CategoryTypePtr category,
+        ItemTypePtr item);
+#endif
+
+bool validateItemPrice(const char* price, const char *prevPrice,
+        bool showError);
 bool validateCategoryTokens(char **tokens, bool showError);
 bool validateMenuTokens(char **tokens, bool showError);
 bool validateCategoryType(const char *type, bool showError);
 bool validateCategoryToken(char **tokens, const int token, bool showError);
 bool validateMenuToken(char **tokens, const int token, bool showError);
-bool populateMenu(BCSType *menu, const char *line, bool isSubMenu, SortOrder order);
-bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
+
+char *categoryToString(CategoryTypePtr category);
+char *itemToString(ItemTypePtr item, CategoryTypePtr parent);
+void freeCategory(CategoryTypePtr category);
+char *createDashedHeader(CategoryTypePtr category);
 char *createReport(CategoryTypePtr category);
 bool createAndSaveReport(CategoryTypePtr category, const char *fileName);
 void eachItem(CategoryTypePtr category, void (*fp)(ItemTypePtr item));
 void displayItem(ItemTypePtr ip);
 
+char *getCategoryIdFromStdIn(BCSType* menu);
+char *getCategoryNameFromStdIn(BCSType* menu);
+char *getCategoryTypeFromStdIn(BCSType* menu);
+char *getCategoryDescFromStdIn(BCSType* menu);
+char *getItemIdFromStdIn(BCSType *menu);
+char *getItemNameFromStdIn(BCSType *menu);
+char *getItemPriceFromStdIn(BCSType *menu, const int priceIndex,
+        const char *prevPrice);
+char *getItemDescFromStdIn(BCSType *menu);
 
 
 /* stdin functions. */
@@ -49,17 +74,10 @@ bool getIntegerFromStdIn(int *result, const int length, const char *message,
         const int min, const int max, bool showError, bool allowEmpty);
 bool getStringFromStdIn(char *result, const int length, const char *message,
         const int min, bool showError, bool allowEmpty);
-
 int getLineFromStream(char **result, FILE *stream, bool stripNewLine);
+int readLineFromStream(char **result, FILE *fp);
 int getFirstLineFromFile(char **result, const char *fileName);
-char *getCategoryIdFromStdIn(BCSType* menu);
-char *getCategoryNameFromStdIn(BCSType* menu);
-char *getCategoryTypeFromStdIn(BCSType* menu);
-char *getCategoryDescFromStdIn(BCSType* menu);
-char *getItemIdFromStdIn(BCSType *menu);
-char *getItemNameFromStdIn(BCSType *menu);
-char *getItemPriceFromStdIn(BCSType *menu, int priceIndex);
-char *getItemDescFromStdIn(BCSType *menu);
+
 
 /* Dynamic memory functions. */
 bool allocateString(char **str, const int size);

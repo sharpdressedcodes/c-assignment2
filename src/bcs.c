@@ -1,10 +1,14 @@
 /****************************************************************************
 * COSC2138/CPT220 - Programming Principles 2A
 * Study Period  2 2014 Assignment #2 - Brazilian  Coffee Shop  system
-* Full Name        : EDIT HERE
-* Student Number   : EDIT HERE
+* Full Name        : Greg Kappatos
+* Student Number   : s3460969
 * Start up code provided by the CTEACH team
 ****************************************************************************/
+
+/*
+ * valgrind -v --leak-check=full ./bcs ../menu.dat ../submenu.dat
+ * */
 
 #include "bcs.h"
 #include "bcs_options.h"
@@ -45,7 +49,12 @@ int main(int argc, char* argv[]){
             /* do nothing, the error messages are taken care of. */
 
         } else if (!loadData(&menu, menuFileName, subMenuFileName)){
-            fprintf(stderr, MESSAGE_ERROR_LOAD_DATA_FAIL, menuFileName, subMenuFileName);
+            fprintf(
+                stderr,
+                MESSAGE_ERROR_LOAD_DATA_FAIL,
+                menuFileName,
+                subMenuFileName
+            );
 
         } else {
 
@@ -77,7 +86,7 @@ int main(int argc, char* argv[]){
             /* Append the request. */
             strcat(menuString, "\nSelect your option: ");
 
-            /* Main menu loop. Abort will be modified when user selects "Exit". */
+            /* Main menu loop. Abort will be modified when user selects "Exit".*/
             while (!abort) {
 
                 /* Get the menu option from the user.
@@ -87,31 +96,48 @@ int main(int argc, char* argv[]){
 
                     switch (option){
                         case eMethodDisplayHot:
+
                             displaySummary(&menu, eDrinkHot);
                             break;
+
                         case eMethodDisplayCold:
+
                             displaySummary(&menu, eDrinkCold);
                             break;
+
                         case eMethodReport:
+
                             categoryReport(&menu);
                             break;
+
                         case eMethodAddCategory:
+
                             addCategory(&menu);
                             break;
+
                         case eMethodDeleteCategory:
+
                             deleteCategory(&menu);
                             break;
+
                         case eMethodAddItem:
+
                             addItem(&menu);
                             break;
+
                         case eMethodDeleteItem:
+
                             deleteItem(&menu);
                             break;
+
                         case eMethodSaveData:
+
                             saveData(&menu, menuFileName, subMenuFileName);
                             abort = true;
                             break;
+
                         case eMethodExitApp:
+
                             abort = true;
                             break;
                     }
@@ -120,12 +146,12 @@ int main(int argc, char* argv[]){
 
             }
 
-            systemFree(&menu);
-
             result = EXIT_SUCCESS;
 
         }
 
+        /* Cleanup. */
+        systemFree(&menu);
 
     }
 

@@ -1,8 +1,8 @@
 /****************************************************************************
 * COSC2138/CPT220 - Programming Principles 2A
 * Study Period  2  2014 Assignment #2 - Brazilian Coffee Shop  system
-* Full Name        : EDIT HERE
-* Student Number   : EDIT HERE
+* Full Name        : Greg Kappatos
+* Student Number   : s3460969
 * Start up code provided by the CTEACH team
 ****************************************************************************/
 
@@ -81,8 +81,9 @@ typedef BOOLEAN bool;
 #define MESSAGE_ERROR_NO_MEMORY "Error: memory allocation failed.\n"
 #define MESSAGE_ERROR_INVALID_ARGS "Error: You must enter 2 filenames!\n"
 #define MESSAGE_ERROR_FILE_NOT_EXIST "Error: Filename %s does not exist!\n"
+#define MESSAGE_ERROR_FILE_EMPTY "Error: File %s is empty!\n"
 #define MESSAGE_ERROR_FILENAME_TOO_LONG "Error: Filename %s is too long! (max: %d)\n"
-#define MESSAGE_ERROR_LOAD_DATA_FAIL "Error: Can't load data from file %s and %s\n"
+#define MESSAGE_ERROR_LOAD_DATA_FAIL "Error: Can't load data from files %s and %s\n"
 #define MESSAGE_ERROR_INVALID_TOKEN "Error: %s token %s is invalid (index: %d)!\n"
 #define MESSAGE_ERROR_INVALID_PRICE "Error: price is invalid!\n"
 #define MESSAGE_ERROR_INVALID_CATEGORY_TYPE "Error: Invalid Category Type.\n"
@@ -171,6 +172,8 @@ typedef BOOLEAN bool;
 
 #define WORD_WRAP_LIMIT 78
 
+#define BONUS_2 true
+
 /* End Custom Types */
 
 
@@ -186,6 +189,41 @@ typedef struct price
    unsigned dollars;
    unsigned cents;
 } PriceType;
+
+
+#ifdef BONUS_2
+
+typedef struct ListNode* ListNodeTypePtr;
+
+typedef struct ListNode {
+    void *data;
+    ListNodeTypePtr next;
+} ListNodeType;
+
+typedef struct bcs
+{
+    int nodeCount;
+    ListNodeTypePtr head;
+} BCSType;
+
+typedef struct item
+{
+   char itemID[ID_LEN + 1];
+   char itemName[MAX_NAME_LEN + 1];
+   PriceType prices[NUM_PRICES];
+   char itemDescription[MAX_DESC_LEN + 1];
+} ItemType;
+
+typedef struct category
+{
+   char categoryID[ID_LEN + 1];
+   char categoryName[MAX_NAME_LEN + 1];
+   char drinkType;       /*(H)ot or (C)old.*/
+   char categoryDescription[MAX_DESC_LEN + 1];
+   BCSType *items;
+} CategoryType;
+
+#else
 
 typedef struct item
 {
@@ -212,11 +250,22 @@ typedef struct bcs
    CategoryTypePtr headCategory;
    unsigned numCategories;
 } BCSType;
+#endif
 
 
 
 
 
+
+
+
+
+
+
+
+
+/* Function pointer used for item iteration. */
+typedef void (*itemIteratorCallback)(ItemTypePtr item);
 
 /* This structure defines the main menu options. */
 typedef struct {
