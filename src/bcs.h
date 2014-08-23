@@ -172,8 +172,6 @@ typedef BOOLEAN bool;
 
 #define WORD_WRAP_LIMIT 78
 
-#define BONUS_2 true
-
 /* End Custom Types */
 
 
@@ -191,7 +189,6 @@ typedef struct price
 } PriceType;
 
 
-#ifdef BONUS_2
 
 typedef struct ListNode* ListNodeTypePtr;
 
@@ -223,34 +220,6 @@ typedef struct category
    BCSType *items;
 } CategoryType;
 
-#else
-
-typedef struct item
-{
-   char itemID[ID_LEN + 1];
-   char itemName[MAX_NAME_LEN + 1];
-   PriceType prices[NUM_PRICES];
-   char itemDescription[MAX_DESC_LEN + 1];
-   ItemTypePtr nextItem;
-} ItemType;
-
-typedef struct category
-{
-   char categoryID[ID_LEN + 1];
-   char categoryName[MAX_NAME_LEN + 1];
-   char drinkType;      /* (H)ot or (C)old. */
-   char categoryDescription[MAX_DESC_LEN + 1];
-   CategoryTypePtr nextCategory;
-   ItemTypePtr headItem;
-   unsigned numItems;
-} CategoryType;
-
-typedef struct bcs
-{
-   CategoryTypePtr headCategory;
-   unsigned numCategories;
-} BCSType;
-#endif
 
 
 

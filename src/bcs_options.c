@@ -18,12 +18,8 @@
 void displaySummary(BCSType* menu, char drinkType)
 {
 
-#ifdef BONUS_2
     ListNodeTypePtr node = menu->head;
     CategoryTypePtr cp = (CategoryTypePtr)node->data;
-#else
-    CategoryTypePtr cp = menu->headCategory;
-#endif
 
     char title[MAX_STRING_MEDIUM] = {0};
     char *titleDashes = null;
@@ -44,11 +40,7 @@ void displaySummary(BCSType* menu, char drinkType)
 
     /* Iterate though all categories, displaying only
      * the appropriate ones. */
-#ifdef BONUS_2
     while (node){
-#else
-    while (cp){
-#endif
 
         if (cp->drinkType == drinkType){
 
@@ -65,13 +57,9 @@ void displaySummary(BCSType* menu, char drinkType)
             }
         }
 
-#ifdef BONUS_2
         node = (ListNodeTypePtr)node->next;
         if (node)
             cp = (CategoryTypePtr)node->data;
-#else
-        cp = cp->nextCategory;
-#endif
 
     }
 
@@ -199,8 +187,6 @@ void deleteCategory(BCSType* menu)
 
     if (strlen(catId)){
 
-#ifdef BONUS_2
-
         ListNodeTypePtr lastCategoryNode = menu->head;
         CategoryTypePtr lastCategory = (CategoryTypePtr)lastCategoryNode->data;
 
@@ -254,49 +240,6 @@ void deleteCategory(BCSType* menu)
         }
 
         menu->nodeCount--;
-
-#else
-        CategoryTypePtr lastCategory = menu->headCategory;
-
-        if (strcmp(lastCategory->categoryID, catId) == 0){
-
-            /* Reconnect the chain. */
-            menu->headCategory = lastCategory->nextCategory;
-            printf(
-                MESSAGE_DELETED_CATEGORY,
-                lastCategory->categoryID,
-                lastCategory->categoryName
-            );
-            freeCategory(lastCategory);
-
-        } else {
-
-            CategoryTypePtr currentCategory = lastCategory->nextCategory;
-
-            while (currentCategory){
-
-                if (strcmp(currentCategory->categoryID, catId) == 0){
-                    /* Reconnect the chain. */
-                    lastCategory->nextCategory = currentCategory->nextCategory;
-                    printf(
-                        MESSAGE_DELETED_CATEGORY,
-                        currentCategory->categoryID,
-                        currentCategory->categoryName
-                    );
-                    freeCategory(currentCategory);
-                    break;
-                }
-
-                lastCategory = currentCategory;
-                currentCategory = currentCategory->nextCategory;
-
-            }
-
-        }
-
-        menu->numCategories--;
-
-#endif
 
     }
 
@@ -418,10 +361,8 @@ void deleteItem(BCSType* menu)
     char *itemId = null;
     CategoryTypePtr category = null;
     ItemTypePtr item = null;
-#ifdef BONUS_2
     ListNodeTypePtr itemNode = null;
     ItemTypePtr item2 = null;
-#endif
 
     printf("%s\n", title);
     freeString(&title);
@@ -438,8 +379,6 @@ void deleteItem(BCSType* menu)
 
             category = getCategoryFromId(menu, catId);
             item = getItemFromId(menu, itemId);
-
-#ifdef BONUS_2
 
             itemNode = findItemNode(menu, category, item);
             item2 = (ItemTypePtr)category->items->head;
@@ -475,38 +414,6 @@ void deleteItem(BCSType* menu)
             if (category->items->nodeCount == 0)
                 category->items->head = null;
 
-#else
-
-            if (strcmp(category->headItem->itemID, itemId) == 0){
-
-                /* Reconnect the chain. */
-                category->headItem = item->nextItem;
-
-            } else {
-
-                ItemTypePtr prev = category->headItem;
-                ItemTypePtr current = prev->nextItem;
-
-                while (current){
-
-                    if (strcmp(current->itemID, itemId) == 0){
-                        /* Reconnect the chain. */
-                        prev->nextItem = item->nextItem;
-                        break;
-                    }
-
-                    prev = current;
-                    current = current->nextItem;
-                }
-
-            }
-
-            printf(MESSAGE_DELETED_ITEM, item->itemID, item->itemName);
-            category->numItems--;
-            free(item);
-
-#endif
-
         }
 
     }
@@ -527,9 +434,6 @@ void saveData(BCSType* menu, char* menuFile, char* submenuFile)
     FILE *fpSubMenu = fopen(submenuFile, "w");
     CategoryTypePtr category = null;
     ItemTypePtr item = null;
-
-#ifdef BONUS_2
-
     ListNodeTypePtr itemNode = null;
     ListNodeTypePtr categoryNode = menu->head;
 
@@ -567,31 +471,6 @@ void saveData(BCSType* menu, char* menuFile, char* submenuFile)
             category = (CategoryTypePtr)categoryNode->data;
 
     }
-
-#else
-
-    category = menu->headCategory;
-
-    while (category){
-
-        char *categoryString = categoryToString(category);
-        fprintf(fpMenu, "%s\n", categoryString);
-        freeString(&categoryString);
-
-        item = category->headItem;
-
-        while (item){
-
-            char *itemString = itemToString(item, category);
-            fprintf(fpSubMenu, "%s\n", itemString);
-            freeString(&itemString);
-
-            item = item->nextItem;
-        }
-        category = category->nextCategory;
-    }
-
-#endif
 
     fclose(fpMenu);
     fclose(fpSubMenu);
