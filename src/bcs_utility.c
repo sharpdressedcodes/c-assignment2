@@ -33,17 +33,8 @@ void readRestOfLine()
 void systemInit(BCSType* menu)
 {
 
-#ifdef BONUS_2
-
-    menu->head = null;
-    menu->nodeCount = 0;
-
-#else
-
     menu->headCategory = null;
     menu->numCategories = 0;
-
-#endif
 
     srand(time(null));
 
@@ -222,21 +213,6 @@ char *generateItemId(BCSType *menu){
 
 void freeCategories(BCSType* menu){
 
-#ifdef BONUS_2
-
-    ListNodeTypePtr current = menu->head;
-
-    while (current){
-
-        ListNodeTypePtr prev = current;
-
-        current = current->next;
-        freeCategoryNode(prev);
-
-    }
-
-#else
-
     CategoryTypePtr current = menu->headCategory;
 
     while (current){
@@ -248,15 +224,11 @@ void freeCategories(BCSType* menu){
 
     }
 
-#endif
-
 }
 
 /* Iterates through all categories, and free's associated memory.
  * */
 void freeCategory(CategoryTypePtr category){
-
-#ifndef BONUS_2
 
     ItemTypePtr current = category->headItem;
 
@@ -272,8 +244,6 @@ void freeCategory(CategoryTypePtr category){
 
     free(category);
 
-#endif
-
 }
 
 /* Creates a dashed header. Used for individual category headers.
@@ -286,13 +256,7 @@ char *createDashedHeader(CategoryTypePtr category){
     char *top3 = null;
     char *result = null;
     int i = 0;
-    int count = 0;
-
-#ifdef BONUS_2
-    count = category->items->nodeCount;
-#else
-    count = category->numItems;
-#endif
+    int count = category->numItems;
 
     sprintf(top,
         FORMAT_DASHED_HEADER_TOP1,
@@ -337,100 +301,7 @@ char *createDashedHeader(CategoryTypePtr category){
 }
 
 
-#ifdef BONUS_2
-/* Iterates through all category nodes, and free's all
- * associated memory (including child nodes and items).
- * */
-void freeCategoryNode(ListNodeTypePtr node){
 
-    CategoryTypePtr category = (CategoryTypePtr)node->data;
-    ListNodeTypePtr itemNode = category->items->head;
-
-    while (itemNode){
-
-        ItemTypePtr item = null;
-        ListNodeTypePtr prevNode = itemNode;
-
-        itemNode = (ListNodeTypePtr)itemNode->next;
-        item = (ItemTypePtr)prevNode->data;
-
-        free(item);
-        free(prevNode);
-
-    }
-
-    free(category->items);
-    free(category);
-    free(node);
-
-}
-
-/* Generic node creation. Helper method to shorten the code.
- * */
-ListNodeTypePtr createNode(void *data, ListNodeTypePtr next){
-
-    ListNodeTypePtr node = calloc(1, sizeof(ListNodeType));
-
-    if (!node){
-
-        fputs(MESSAGE_ERROR_NO_MEMORY, stderr);
-
-    } else {
-
-        node->data = data;
-        node->next = next;
-
-    }
-
-    return node;
-
-}
-
-/* Find node associated with category.
- * */
-ListNodeTypePtr findCategoryNode(BCSType *menu, CategoryTypePtr category){
-
-    ListNodeTypePtr node = menu->head;
-
-    /* Iterate through all nodes. */
-    while (node){
-
-        CategoryTypePtr ptr = (CategoryTypePtr)node->data;
-
-        if (memcmp(category, ptr, sizeof(ListNodeType)) == 0)
-            return node;
-
-        node = (ListNodeTypePtr)node->next;
-
-    }
-
-    return null;
-
-}
-
-/* Find node associated with item.
- * */
-ListNodeTypePtr findItemNode(BCSType *menu, CategoryTypePtr category,
-        ItemTypePtr item){
-
-    ListNodeTypePtr node = category->items->head;
-
-    /* Iterate through all nodes. */
-    while (node){
-
-        ItemTypePtr ptr = (ItemTypePtr)node->data;
-
-        if (memcmp(item, ptr, sizeof(ListNodeType)) == 0)
-            return node;
-
-        node = (ListNodeTypePtr)node->next;
-
-    }
-
-    return null;
-
-}
-#endif
 
 /* Add a category to the main data structure, in the correct sorted order.
  * */
@@ -438,199 +309,6 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category,
         SortOrder order){
 
     CategoryTypePtr currentCategory = null;
-
-#ifdef BONUS_2
-
-    static ListNodeTypePtr lastNode = null;
-    ListNodeTypePtr currentNode = null;
-
-    if (menu->head == null){
-
-        ListNodeTypePtr node = createNode(category, null);
-
-        if (!node)
-            return;
-
-        menu->head = node;
-        /* Store last Item so we don't have to iterate
-         * over the whole list to find the next empty slot.*/
-        lastNode = menu->head;
-
-    } else {
-
-        ListNodeTypePtr node = null;
-
-        switch (order){
-            case eSortOrderAsIs:
-
-                node = createNode(category, null);
-
-                if (!node)
-                    return;
-
-                lastNode->next = (struct ListNode*)node;
-                lastNode = (ListNodeTypePtr)lastNode->next;
-
-                break;
-
-            case eSortOrderAscending:
-
-                currentNode = menu->head;
-                currentCategory = (CategoryTypePtr)currentNode->data;
-
-                /* string2 is less than string1 */
-                if (strcasecmp(currentCategory->categoryName,
-                        category->categoryName) > 0){
-
-                    node = createNode(category, currentNode);
-
-                    if (!node)
-                        return;
-
-                    menu->head = node;
-
-                } else {
-
-                    /* leave first item as is, search for item that is higher,
-                     *  and insert in the chain at that point*/
-
-                    lastNode = currentNode;
-                    currentNode = (ListNodeTypePtr)currentNode->next;
-
-                    if (currentNode)
-                        currentCategory = (CategoryTypePtr)currentNode->data;
-
-                    do {
-
-                        if (currentNode == null){
-
-                            node = createNode(category, null);
-
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            currentNode = node;
-                            break;
-
-                        }
-
-                        else if (strcasecmp(currentCategory->categoryName,
-                                category->categoryName) > 0){
-
-                            node = createNode(category, currentNode);
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            break;
-
-                        }
-
-                        lastNode = currentNode;
-                        currentNode = currentNode->next;
-
-                        if (currentNode)
-                            currentCategory =
-                                    (CategoryTypePtr)currentNode->data;
-
-                    } while (currentNode != null);
-
-                    if (currentNode == null){
-
-                        node = createNode(category, null);
-
-                        if (!node)
-                            return;
-                        lastNode->next = node;
-                    }
-
-                }
-
-                break;
-
-            case eSortOrderDescending:
-
-                currentNode = menu->head;
-                currentCategory = (CategoryTypePtr)currentNode->data;
-
-                /* string1 is less than string2 */
-                if (strcasecmp(currentCategory->categoryName,
-                        category->categoryName) < 0){
-
-                    node = createNode(category, currentNode);
-                    if (!node)
-                        return;
-                    menu->head = node;
-
-                } else {
-
-                    /* leave first item as is, search for item that is lower,
-                     *  and insert in the chain at that point*/
-
-                    lastNode = currentNode;
-                    currentNode = currentNode->next;
-
-                    currentCategory = (CategoryTypePtr)currentNode->data;
-
-                    do {
-
-                        if (currentNode == null){
-
-                            node = createNode(category, null);
-
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            currentNode = node;
-                            break;
-                        }
-
-                        else if (strcasecmp(currentCategory->categoryName,
-                                category->categoryName) < 0){
-
-                            node = createNode(category, currentNode);
-
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            break;
-
-                        }
-
-                        lastNode = currentNode;
-                        currentNode = currentNode->next;
-
-                        if (currentNode)
-                            currentCategory =
-                                    (CategoryTypePtr)currentNode->data;
-
-                    } while (currentNode != null);
-
-                    if (currentNode == null){
-
-                        node = createNode(category, null);
-
-                        if (!node)
-                            return;
-
-                        lastNode->next = node;
-
-                    }
-
-                }
-
-                break;
-        }
-
-    }
-
-    menu->nodeCount++;
-
-#else
-
     static CategoryTypePtr lastCategory = null;
 
     if (menu->headCategory == null){
@@ -745,8 +423,6 @@ void addCategoryToMenu(BCSType *menu, CategoryTypePtr category,
 
     menu->numCategories++;
 
-#endif
-
 }
 
 /* Add an item to the main data structure, in the correct sorted order.
@@ -755,183 +431,6 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item,
         SortOrder order){
 
     ItemTypePtr currentItem = null;
-
-#ifdef BONUS_2
-
-    if (category->items->head == null){
-
-        ListNodeTypePtr node = createNode(item, null);
-
-        if (!node)
-            return;
-
-        category->items->head = node;
-
-    } else {
-
-        ListNodeTypePtr currentItemNode = null;
-        ListNodeTypePtr node = null;
-        ListNodeTypePtr lastNode = null;
-
-        switch (order){
-            case eSortOrderAsIs:
-
-                currentItemNode = category->items->head;
-                currentItem = (ItemTypePtr)currentItemNode->data;
-
-                do {
-
-                    if (currentItemNode == null){
-                        node = createNode(item, null);
-                        if (!node)
-                            return;
-                        currentItemNode->next = node;
-                        break;
-                    }
-
-                    currentItemNode = currentItemNode->next;
-
-                } while (currentItemNode != null);
-
-                break;
-
-            case eSortOrderAscending:
-
-                currentItemNode = category->items->head;
-                currentItem = (ItemTypePtr)currentItemNode->data;
-
-                /* string2 is less than string1 */
-                if (strcasecmp(currentItem->itemName, item->itemName) > 0){
-
-                    node = createNode(item, currentItemNode);
-                    if (!node)
-                        return;
-                    category->items->head = node;
-
-                } else {
-
-                    /* leave first item as is, search for item that is higher,
-                     *  and insert in the chain at that point*/
-
-                    lastNode = currentItemNode;
-                    currentItemNode = currentItemNode->next;
-
-                    if (currentItemNode)
-                        currentItem = (ItemTypePtr)currentItemNode->data;
-
-                    while (currentItemNode != null){
-
-                        if (currentItemNode == null)
-                            break;
-
-                        else if (strcasecmp(currentItem->itemName,
-                                item->itemName) > 0){
-
-                            node = createNode(item, currentItemNode);
-
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            break;
-
-                        }
-
-                        lastNode = currentItemNode;
-                        currentItemNode = currentItemNode->next;
-
-                        if (currentItemNode)
-                            currentItem = (ItemTypePtr)currentItemNode->data;
-
-                    }
-
-                    if (currentItemNode == null){
-
-                        node = createNode(item, null);
-
-                        if (!node)
-                            return;
-
-                        lastNode->next = node;
-
-                    }
-
-                }
-
-                break;
-
-            case eSortOrderDescending:
-
-                currentItemNode = category->items->head;
-                currentItem = (ItemTypePtr)currentItemNode->data;
-
-                /* string1 is less than string2 */
-                if (strcasecmp(currentItem->itemName, item->itemName) < 0){
-
-                    node = createNode(item, currentItemNode);
-
-                    if (!node)
-                        return;
-
-                    category->items->head = node;
-
-                } else {
-
-                    /* leave first item as is, search for item that is lower,
-                     *  and insert in the chain at that point*/
-
-                    lastNode = currentItemNode;
-                    currentItemNode = currentItemNode->next;
-
-                    currentItem = (ItemTypePtr)currentItemNode->data;
-
-                    while (currentItemNode != null) {
-
-                        if (currentItemNode == null)
-                            break;
-
-                        else if (strcasecmp(currentItem->itemName,
-                                item->itemName) < 0){
-
-                            node = createNode(item, currentItemNode);
-
-                            if (!node)
-                                return;
-
-                            lastNode->next = node;
-                            break;
-
-                        }
-
-                        lastNode = currentItemNode;
-                        currentItemNode = currentItemNode->next;
-
-                        if (currentItemNode)
-                            currentItem = (ItemTypePtr)currentItemNode->data;
-
-                    }
-
-                    if (currentItemNode == null){
-
-                        node = createNode(item, null);
-
-                        if (!node)
-                            return;
-
-                        lastNode->next = node;
-
-                    }
-
-                }
-
-                break;
-        }
-
-    }
-
-    category->items->nodeCount++;
-
-#else
 
     if (category->headItem == null){
 
@@ -1049,8 +548,6 @@ void addItemToMenu(BCSType *menu, CategoryTypePtr category, ItemTypePtr item,
     }
 
     category->numItems++;
-
-#endif
 
 }
 
@@ -1314,28 +811,12 @@ CategoryTypePtr getCategoryFromId(BCSType *menu, const char *id){
     CategoryTypePtr ptr = null;
     CategoryTypePtr head = null;
 
-#ifdef BONUS_2
-
-    ListNodeTypePtr headNode = null;
-
-    for (headNode = menu->head; headNode != null; headNode = headNode->next){
-        head = (CategoryTypePtr)headNode->data;
-        if (strcmp(head->categoryID, id) == 0){
-            ptr = head;
-            break;
-        }
-    }
-
-#else
-
     for (head = menu->headCategory; head != null; head = head->nextCategory){
         if (strcmp(head->categoryID, id) == 0){
             ptr = head;
             break;
         }
     }
-
-#endif
 
     return ptr;
 
@@ -1349,28 +830,6 @@ ItemTypePtr getItemFromId(BCSType *menu, const char *id){
     ItemTypePtr head = null;
     CategoryTypePtr chead = null;
 
-#ifdef BONUS_2
-
-    ListNodeTypePtr cheadNode = null;
-    ListNodeTypePtr headNode = null;
-
-    for (cheadNode = menu->head;
-            cheadNode != null && ptr == null;
-            cheadNode = cheadNode->next){
-        chead = (CategoryTypePtr)cheadNode->data;
-        for (headNode = chead->items->head;
-                headNode != null;
-                headNode = headNode->next){
-            head = (ItemTypePtr)headNode->data;
-            if (strcmp(head->itemID, id) == 0){
-                ptr = head;
-                break;
-            }
-        }
-    }
-
-#else
-
     for (chead = menu->headCategory;
             chead != null && ptr == null;
             chead = chead->nextCategory){
@@ -1381,8 +840,6 @@ ItemTypePtr getItemFromId(BCSType *menu, const char *id){
             }
         }
     }
-
-#endif
 
     return ptr;
 
@@ -1426,15 +883,9 @@ CategoryTypePtr menuCategoryFromString(BCSType *menu, const char *str){
 
         } else {
 
-
-#ifdef BONUS_2
-            ptr->items = calloc(1, sizeof(BCSType));
-            ptr->items->nodeCount = 0;
-#else
             ptr->numItems = 0;
             ptr->headItem = null;
             ptr->nextCategory = null;
-#endif
             ptr->drinkType = toupper(tokens[eCategoryType][0]);
 
             strcpy(ptr->categoryID, tokens[eCategoryId]);
@@ -1511,9 +962,7 @@ ItemTypePtr menuItemFromString(BCSType *menu, const char *str,
 
         } else {
 
-#ifndef BONUS_2
             ptr->nextItem = null;
-#endif
 
             strcpy(ptr->itemID, tokens[eMenuId]);
             strcpy(ptr->itemName, tokens[eMenuType]);
@@ -1558,12 +1007,7 @@ char *createReport(CategoryTypePtr category){
     char *title = null;
     char s1[MAX_STRING_MEDIUM] = {0};
     char s2[MAX_STRING_MEDIUM] = {0};
-#ifdef BONUS_2
-    ListNodeTypePtr itemNode = category->items->head;
-    ItemTypePtr item = (ItemTypePtr)itemNode->data;
-#else
     ItemTypePtr item = category->headItem;
-#endif
 
     sprintf(
         s1,
@@ -1583,11 +1027,7 @@ char *createReport(CategoryTypePtr category){
     freeString(&title);
     len = strlen(result);
 
-#ifdef BONUS_2
-    while (itemNode){
-#else
     while (item){
-#endif
 
         i = 0;
 
@@ -1658,13 +1098,7 @@ char *createReport(CategoryTypePtr category){
 
         }
 
-#ifdef BONUS_2
-        itemNode = itemNode->next;
-        if (itemNode)
-            item = (ItemTypePtr)itemNode->data;
-#else
         item = item->nextItem;
-#endif
 
     }
 
@@ -1698,25 +1132,12 @@ bool createAndSaveReport(CategoryTypePtr category, const char *fileName){
  * */
 void eachItem(CategoryTypePtr category, itemIteratorCallback itemCallback){
 
-#ifdef BONUS_2
-
-    ListNodeTypePtr ptrNode = category->items->head;
-
-    while (ptrNode){
-        itemCallback((ItemTypePtr)ptrNode->data);
-        ptrNode = ptrNode->next;
-    }
-
-#else
-
     ItemTypePtr ptr = category->headItem;
 
     while (ptr){
         itemCallback(ptr);
         ptr = ptr->nextItem;
     }
-
-#endif
 
 }
 

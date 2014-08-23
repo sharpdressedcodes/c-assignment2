@@ -33,13 +33,6 @@ bool populateMenu(BCSType *menu, const char *line, bool isSubMenu,
         SortOrder order);
 bool loadDataFromFile(BCSType* menu, const char* fileName, bool isSubMenu);
 
-#ifdef BONUS_2
-void freeCategoryNode(ListNodeTypePtr node);
-ListNodeTypePtr createNode(void *data, ListNodeTypePtr next);
-ListNodeTypePtr findCategoryNode(BCSType *menu, CategoryTypePtr category);
-ListNodeTypePtr findItemNode(BCSType *menu, CategoryTypePtr category,
-        ItemTypePtr item);
-#endif
 
 bool validateItemPrice(const char* price, const char *prevPrice,
         bool showError);
